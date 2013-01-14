@@ -79,7 +79,7 @@
          </geometry>
        </visual>
        <sensor name='camera' type='camera'>
-	 <pose>0 0 0.5 0 0 0</pose>
+	 <pose>0 0 0.5 0 0.2 3.14</pose>
 	 <topic>kuukulgur_cam/image</topic>
 	 <plugin name="kulgurcam" filename="libgazebo_ros_camera.so"/>
          <camera>
