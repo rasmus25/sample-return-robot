@@ -13,8 +13,8 @@
         <collision name="collision">
           <geometry>
             <heightmap>
-              <uri>file://Media/materials/textures/myheightmap.png</uri>
-              <size>129 129 10</size>
+              <uri>file://Media/materials/textures/heightmap_with_fence.png</uri>
+              <size>329.25 329.25 9.14</size>
               <pos>0 0 0</pos>
             </heightmap>
           </geometry>
@@ -46,8 +46,8 @@
                 <min_height>4</min_height>
                 <fade_dist>5</fade_dist>
               </blend>
-              <uri>file://Media/materials/textures/myheightmap.png</uri>
-              <size>129 129 10</size>
+              <uri>file://Media/materials/textures/heightmap_with_fence.png</uri>
+              <size>329.25 329.25 9.14</size>
               <pos>0 0 0</pos>
             </heightmap>
           </geometry>
@@ -57,7 +57,7 @@
 
     <include>
         <uri>file://models/robot1</uri>
-	<pose>0 0 5.2 0 0 0</pose>
+	<pose>0 0 2.5 0 0 0</pose>
     </include>
 
   </world>
