@@ -1,11 +1,77 @@
 <?xml version="1.0"?>
 <gazebo version="1.2">
   <world name="default">
-
+  <!--
     <include>
       <uri>model://sun</uri>
     </include>
+  -->
+  <!-- Light Sources -->
+  <light type="directional" name="sun1">
+    <cast_shadows>true</cast_shadows>
 
+    <pose>0 0 10 0 0 0</pose>
+    <diffuse>0.8 0.8 0.8 1</diffuse>
+    <specular>0.1 0.1 0.1 1</specular>
+
+    <attenuation>
+      <range>1000</range>
+      <constant>0.9</constant>
+      <linear>0.01</linear>
+      <quadratic>0.001</quadratic>
+    </attenuation>
+
+    <direction>-0.5 0.5 -1.0</direction>
+  </light>
+
+  <light type="directional" name="sun2">
+    <cast_shadows>true</cast_shadows>
+
+    <pose>0 0 10 0 0 0</pose>
+    <diffuse>0.8 0.8 0.8 1</diffuse>
+    <specular>0.1 0.1 0.1 1</specular>
+
+    <attenuation>
+      <range>1000</range>
+      <constant>0.9</constant>
+      <linear>0.01</linear>
+      <quadratic>0.001</quadratic>
+    </attenuation>
+
+    <direction>-0.5 0.5 -1.0</direction>
+  </light>
+  <light type="directional" name="sun3">
+    <cast_shadows>true</cast_shadows>
+
+    <pose>0 0 10 0 0 0</pose>
+    <diffuse>0.8 0.8 0.8 1</diffuse>
+    <specular>0.1 0.1 0.1 1</specular>
+
+    <attenuation>
+      <range>1000</range>
+      <constant>0.9</constant>
+      <linear>0.01</linear>
+      <quadratic>0.001</quadratic>
+    </attenuation>
+
+    <direction>-0.5 0.5 -1.0</direction>
+  </light>
+  <light type="directional" name="sun4">
+    <cast_shadows>true</cast_shadows>
+
+    <pose>0 0 10 0 0 0</pose>
+    <diffuse>0.8 0.8 0.8 1</diffuse>
+    <specular>0.1 0.1 0.1 1</specular>
+
+    <attenuation>
+      <range>1000</range>
+      <constant>0.9</constant>
+      <linear>0.01</linear>
+      <quadratic>0.001</quadratic>
+    </attenuation>
+
+    <direction>-0.5 0.5 -1.0</direction>
+  </light>
     <model name="topomap">
       <static>true</static>
       <link name="link">
@@ -32,5 +98,39 @@
         <uri>file://models/robot1</uri>
 	<pose>0 0 2.5 0 0 0</pose>
     </include>
+
+    <!-- hockey puck -->
+    <model name="hockey_puck">
+      <pose>-8.0 -2.0 2.5 0 0 0</pose>
+	<link name="puck_body">
+	    <pose>0 0 0 0 0 0</pose>
+            <inertial>
+		<mass>0.16</mass>
+            </inertial>
+
+	    <collision name="puck_collision">
+	      <geometry>
+		<cylinder>
+		  <radius>.0762</radius>
+		  <length>.0254</length>
+		</cylinder>
+	      </geometry>
+	    </collision>
+
+	    <visual name="puck_visual">
+              <material>
+                <ambient>0.8 0 0 0</ambient>
+                <diffuse>0.6 0 0 0</diffuse>
+                <specular>0.1 0 0 0</specular>
+              </material>
+	      <geometry>
+		<cylinder>
+		  <radius>.0762</radius>
+		  <length>.0254</length>
+		</cylinder>
+	      </geometry>
+	    </visual>
+	</link>
+    </model>
   </world>
 </gazebo>
