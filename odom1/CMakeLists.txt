@@ -67,14 +67,11 @@ include_directories(include
 )
 
 ## Declare a cpp library
-add_library(odom_plug src/odo_plug.cpp)
 add_library(diffdrive_wheel_angles_plugin src/diffdrive_wheel_angles_plugin.cpp)
 add_library(diffdrive_control_plugin src/diffdrive_control_plugin.cpp)
 
 ## Declare a cpp executable
 # add_executable(odom1_node src/odom1_node.cpp)
-add_executable(odom1 src/odom1.cpp)
-add_executable(odom2 src/odom2.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(odom1_node ${PROJECT_NAME})
