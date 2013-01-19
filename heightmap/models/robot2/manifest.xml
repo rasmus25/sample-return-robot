@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+<model>
+  <name>4-wheel kulgur</name>
+  <version>1.0</version>
+  <sdf version='1.2'>model.sdf</sdf>
+
+  <author>
+   <name>Ronald T</name>
+   <email>me@my.email</email>
+  </author>
+
+  <description>
+    My awesome robot.
+  </description>
+</model>
