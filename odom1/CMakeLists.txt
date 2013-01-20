@@ -77,13 +77,14 @@ add_library(diffdrive_control_plugin src/diffdrive_control_plugin.cpp)
 # add_dependencies(odom1_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(odom1
+target_link_libraries(diffdrive_wheel_angles_plugin
    ${catkin_LIBRARIES}
 )
 
-target_link_libraries(odom2
+target_link_libraries(diffdrive_control_plugin
    ${catkin_LIBRARIES}
 )
+
 #############
 ## Install ##
 #############
