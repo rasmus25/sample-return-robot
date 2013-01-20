@@ -173,7 +173,7 @@
   </joint>
 
  
+  <plugin name="diffdrive_control_plugin" filename="libdiffdrive_control_plugin.so"/>
 
-
-   </model>
+  </model>
 </gazebo>
