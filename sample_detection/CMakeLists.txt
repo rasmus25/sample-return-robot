@@ -4,7 +4,7 @@ project(sample_detection)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED)
+find_package(catkin REQUIRED sensor_msgs opencv2 cv_bridge roscpp std_msgs image_transport)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -57,6 +57,7 @@ catkin_package(
 
 ## Specify additional locations of header files
 # include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS})
+include_directories(include ${catkin_INCLUDE_DIRS})
 
 ## Declare a cpp library
 # add_library(sample_detection
@@ -65,6 +66,7 @@ catkin_package(
 
 ## Declare a cpp executable
 # add_executable(sample_detection_node src/sample_detection_node.cpp)
+add_executable(blobdetection src/blobdetection.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(sample_detection_node ${PROJECT_NAME})
@@ -73,6 +75,10 @@ catkin_package(
 # target_link_libraries(sample_detection_node
 #   ${catkin_LIBRARIES}
 # )
+ target_link_libraries(blobdetection
+   ${catkin_LIBRARIES}
+ )
+
 
 #############
 ## Install ##

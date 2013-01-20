@@ -13,7 +13,7 @@
   <!-- One license tag required, multiple allowed, one license per tag -->
   <!-- Commonly used license strings: -->
   <!--   BSD, MIT, Boost Software License, GPLv2, GPLv3, LGPLv2.1, LGPLv3 -->
-  <license>TODO</license>
+  <license>BSD</license>
 
 
   <!-- Url tags are optional, but mutiple are allowed, one per tag -->
@@ -41,6 +41,19 @@
   <!--   <test_depend>gtest</test_depend> -->
   <buildtool_depend>catkin</buildtool_depend>
 
+  <buildtool_depend>sensor_msgs</buildtool_depend>
+  <buildtool_depend>opencv2</buildtool_depend>
+  <buildtool_depend>cv_bridge</buildtool_depend>
+  <buildtool_depend>roscpp</buildtool_depend>
+  <buildtool_depend>std_msgs</buildtool_depend>
+  <buildtool_depend>image_transport</buildtool_depend>
+
+  <run_depend>sensor_msgs</run_depend>
+  <run_depend>opencv2</run_depend>
+  <run_depend>cv_bridge</run_depend>
+  <run_depend>roscpp</run_depend>
+  <run_depend>std_msgs</run_depend>
+  <run_depend>image_transport</run_depend>
 
   <!-- The export tag contains other, unspecified, tags -->
   <export>
