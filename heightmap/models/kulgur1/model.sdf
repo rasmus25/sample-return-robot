@@ -7,7 +7,7 @@
       <collision name='collision'>
         <geometry>
           <box>
-            <size>0.48 .3 .1</size>
+            <size>0.48 .25 .1</size>
           </box>
         </geometry>
         <surface>
@@ -34,7 +34,7 @@
 	       <cast_shadows>true</cast_shadows>
         <geometry>
           <box>
-            <size>0.48 .3 .2</size>
+            <size>0.48 .25 .2</size>
           </box>
         </geometry>
       </visual>
@@ -139,7 +139,7 @@
     </visual>
   </link>
 
-    <link name="back_left_wheel">
+    <link name="rear_left_wheel">
     <pose>-0.24 0.2 0.1 0 1.5707 1.5707</pose>
     <collision name="collision">
       <geometry>
@@ -172,7 +172,7 @@
     </visual>
   </link>
 
-    <link name="back_right_wheel">
+    <link name="rear_right_wheel">
     <pose>-0.24 -0.2 0.1 0 1.5707 1.5707</pose>
     <collision name="collision">
       <geometry>
@@ -223,29 +223,31 @@
     </axis>
   </joint>
 
-  <joint type="revolute" name="back_left_wheel_hinge">
-    <pose>0 0 -0.06 0 0 0</pose>
-    <child>back_left_wheel</child>
+  <joint type="revolute2" name="rear_left_wheel_hinge">
+    <pose>0 0 0.03 0 0 0</pose>
+    <child>rear_left_wheel</child>
     <parent>chassis</parent>
     <axis>
-      <xyz>0 1 0</xyz>
+      <xyz>0 0 1</xyz>
     </axis>
     <axis2>
-      <xyz>0 0 1</xyz>
+      <xyz>0 1 0</xyz>
     </axis2>
   </joint>
 
-  <joint type="revolute" name="back_right_wheel_hinge">
-    <pose>0 0 0.06 0 0 0</pose>
-    <child>back_right_wheel</child>
+  <joint type="revolute2" name="rear_right_wheel_hinge">
+    <pose>0 0 -0.03 0 0 0</pose>
+    <child>rear_right_wheel</child>
     <parent>chassis</parent>
     <axis>
-      <xyz>0 1 0</xyz>
+      <xyz>0 0 1</xyz>
     </axis>
     <axis2>
-      <xyz>0 0 1</xyz>
+      <xyz>0 1 0</xyz>
     </axis2>
   </joint>
+
+  <plugin name="plugin" filename="libkulgur1_plugin.so"/>
 
   </model>
 </gazebo>
