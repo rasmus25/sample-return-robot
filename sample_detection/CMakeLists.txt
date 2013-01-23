@@ -67,6 +67,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 ## Declare a cpp executable
 # add_executable(sample_detection_node src/sample_detection_node.cpp)
 add_executable(blobdetection src/blobdetection.cpp)
+add_executable(meanshift src/meanshift.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(sample_detection_node ${PROJECT_NAME})
@@ -78,7 +79,9 @@ add_executable(blobdetection src/blobdetection.cpp)
  target_link_libraries(blobdetection
    ${catkin_LIBRARIES}
  )
-
+ target_link_libraries(meanshift
+   ${catkin_LIBRARIES}
+ )
 
 #############
 ## Install ##
