@@ -45,13 +45,15 @@ double changeTurnRadius(double currentTurnRadius, double changeDir)
 
 		if(fabs(currentTurnRadius) <= MinTurnRadius)
 		{
-			currentTurnRadius = MinTurnRadius * (currentTurnRadius/fabs(currentTurnRadius));
+			currentTurnRadius = -MinTurnRadius * changeDir;
 		}
-		else if (fabs(currentTurnRadius) > MaxTurnRadius)
+		else if (fabs(currentTurnRadius) >= MaxTurnRadius)
 		{
 			currentTurnRadius = HUGE_VAL;
 		}
 	}
+
+	// printw("Turn radius : %f\n", currentTurnRadius);
 
 	return currentTurnRadius;
 }
@@ -61,8 +63,23 @@ double changeTurnRadius(double currentTurnRadius, double changeDir)
 //
 void turnRadiusToWheelAngles(const double turnRadius, double* out_wheelAngles)
 {
-	out_wheelAngles[0] = atan2(WheelAxisDist, turnRadius - TurnWheelJointBase);
-	out_wheelAngles[1] = atan2(WheelAxisDist, turnRadius + TurnWheelJointBase);
+	if(turnRadius == HUGE_VAL)
+	{
+		out_wheelAngles[0] = 0;
+		out_wheelAngles[1] = 0;
+	}
+	else
+	{
+		double substPi = 0.0;
+
+		if (turnRadius < 0)
+		{
+			substPi = M_PI;
+		}
+
+		out_wheelAngles[0] = atan2(WheelAxisDist, turnRadius - TurnWheelJointBase) - substPi;
+		out_wheelAngles[1] = atan2(WheelAxisDist, turnRadius + TurnWheelJointBase) - substPi;
+	}
 }
 
 //
@@ -99,7 +116,7 @@ int main(int argc, char **argv)
 	ros::Publisher 	wheelVelocityPublisher = n.advertise<std_msgs::Float64MultiArray>("/gazebo/set_wheel_velocities", 50);
 	ros::Publisher 	turnWheelAnglesPublisher = n.advertise<std_msgs::Float64MultiArray>("/gazebo/set_rear_wheel_angles", 50);
 
-	double 	turnRadius 	= INFINITY;
+	double 	turnRadius 	= HUGE_VAL;
 	double 	driveVel 	= 0;
 
 	while(ros::ok())
@@ -151,6 +168,8 @@ int main(int argc, char **argv)
 			turnWheelAnglesMsg.data.push_back(turnWheelAngles[1]);
 
 			turnWheelAnglesPublisher.publish(turnWheelAnglesMsg);			
+
+			// printw("Velocities : [%f %f], Angles : [%f %f]\n", wheelAngVelocities[0], wheelAngVelocities[1], turnWheelAngles[0], turnWheelAngles[1]);
 		}
 
 		ros::spinOnce();
