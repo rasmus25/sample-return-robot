@@ -224,7 +224,7 @@
   </joint>
 
   <joint type="revolute2" name="rear_left_wheel_hinge">
-    <pose>0 0 0.03 0 0 0</pose>
+    <pose>0 0 0 0 0 0</pose>
     <child>rear_left_wheel</child>
     <parent>chassis</parent>
     <axis>
@@ -236,7 +236,7 @@
   </joint>
 
   <joint type="revolute2" name="rear_right_wheel_hinge">
-    <pose>0 0 -0.03 0 0 0</pose>
+    <pose>0 0 0 0 0 0</pose>
     <child>rear_right_wheel</child>
     <parent>chassis</parent>
     <axis>

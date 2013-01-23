@@ -67,12 +67,17 @@ include_directories(include
 
 ## Declare a cpp executable
 add_executable(teleop1 src/teleop1.cpp)
+add_executable(kulgur1_teleop src/kulgur1_teleop.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(teleop1_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(teleop1
+   ${catkin_LIBRARIES} ncurses
+)
+
+target_link_libraries(kulgur1_teleop
    ${catkin_LIBRARIES} ncurses
 )
 

@@ -44,7 +44,7 @@ namespace gazebo
       this->rearWheelAnglesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("set_rear_wheel_angles",
         50, &ROSModelPlugin::SetRearWheelAngles, this);
 
-      this->wheelRotationsPublisher = this->node->advertise<std_msgs::Float64MultiArray>("wheel_rotations", 50);
+      this->wheelRotationsPublisher = this->node->advertise<std_msgs::Float64MultiArray>("wheel_rotations_and_angles", 50);
 
       // Listen to the update event. This event is broadcast every
       // simulation iteration.
@@ -75,9 +75,18 @@ namespace gazebo
 
       frontWheelJoints[0]->SetVelocity(0, desiredFrontWheelVelocities[0]);
       frontWheelJoints[1]->SetVelocity(0, desiredFrontWheelVelocities[1]);
+      //
+      //
+      //
 
-      rearWheelJoints[0]->SetVelocity(0, desiredRearWheelTurnVelocities[0]);
-      rearWheelJoints[1]->SetVelocity(0, desiredRearWheelTurnVelocities[1]);
+      for(int i = 0 ; i < 2 ; i++)
+      {
+        desiredRearWheelTurnVelocities[i] = RearWheelControlGain * 
+                                              (desiredRearWheelAngles[i] - rearWheelJoints[i]->GetAngle(0).Radian());
+
+        // TODO: Add velocity limit.
+        rearWheelJoints[i]->SetVelocity(0, desiredRearWheelTurnVelocities[i]);
+      }
 
       //
       //
@@ -88,10 +97,15 @@ namespace gazebo
       {
         std_msgs::Float64MultiArray angles;
 
-        angles.data.push_back(this->model->GetJoint("front_left_wheel_hinge")->GetAngle(0).Radian());
-        angles.data.push_back(this->model->GetJoint("front_right_wheel_hinge")->GetAngle(0).Radian());
-        angles.data.push_back(this->model->GetJoint("rear_left_wheel_hinge")->GetAngle(0).Radian());
-        angles.data.push_back(this->model->GetJoint("rear_right_wheel_hinge")->GetAngle(0).Radian());
+        angles.data.push_back(frontWheelJoints[0]->GetAngle(0).Radian());
+        angles.data.push_back(frontWheelJoints[1]->GetAngle(0).Radian());
+
+        angles.data.push_back(rearWheelJoints[0]->GetState().GetAngle(0).Radian());
+        angles.data.push_back(rearWheelJoints[1]->GetState().GetAngle(0).Radian());
+
+        // revolute2 joint GetAngle(1) is not implemented?
+        // angles.data.push_back(rearWheelJoints[0]->GetAngle(1).Radian());
+        // angles.data.push_back(rearWheelJoints[1]->GetAngle(1).Radian());
 
         wheelRotationsPublisher.publish(angles);
 
@@ -109,8 +123,11 @@ namespace gazebo
     void SetRearWheelAngles(const std_msgs::Float64MultiArray::ConstPtr& angles)
     {
       // For testing, lets set velocities instead.
-      desiredRearWheelTurnVelocities[0] = angles->data[0];
-      desiredRearWheelTurnVelocities[1] = angles->data[1];
+      // desiredRearWheelTurnVelocities[0] = angles->data[0];
+      // desiredRearWheelTurnVelocities[1] = angles->data[1];
+
+      desiredRearWheelAngles[0] = angles->data[0];
+      desiredRearWheelAngles[1] = angles->data[1];
     }
     
     // Max force applied to wheel joint, to reach desired velocity. Define robot's linear acceleration.
@@ -121,6 +138,9 @@ namespace gazebo
 
     // Max velocity that the rear wheel turning "servo" can achieve.
     static const double RearWheelTurnMaxVelocity= 5.0;
+
+    // Wheel turn velocities will be controllerd with desiredVelocity = (currentAngle - desiredAngle)*ControlGain
+    static const double RearWheelControlGain    = 10.0;
 
     static const double WheelRotationsPublishPeriod = 50;
 
