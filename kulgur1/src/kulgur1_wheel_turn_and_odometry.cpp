@@ -100,8 +100,8 @@ namespace gazebo
         angles.data.push_back(frontWheelJoints[0]->GetAngle(0).Radian());
         angles.data.push_back(frontWheelJoints[1]->GetAngle(0).Radian());
 
-        angles.data.push_back(rearWheelJoints[0]->GetState().GetAngle(0).Radian());
-        angles.data.push_back(rearWheelJoints[1]->GetState().GetAngle(0).Radian());
+        angles.data.push_back(rearWheelJoints[0]->GetAngle(0).Radian());
+        angles.data.push_back(rearWheelJoints[1]->GetAngle(0).Radian());
 
         // revolute2 joint GetAngle(1) is not implemented?
         // angles.data.push_back(rearWheelJoints[0]->GetAngle(1).Radian());
