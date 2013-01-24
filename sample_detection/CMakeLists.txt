@@ -68,6 +68,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 # add_executable(sample_detection_node src/sample_detection_node.cpp)
 add_executable(blobdetection src/blobdetection.cpp)
 add_executable(meanshift src/meanshift.cpp)
+add_executable(histogram_correlation src/histogram_correlation.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(sample_detection_node ${PROJECT_NAME})
@@ -80,6 +81,9 @@ add_executable(meanshift src/meanshift.cpp)
    ${catkin_LIBRARIES}
  )
  target_link_libraries(meanshift
+   ${catkin_LIBRARIES}
+ )
+ target_link_libraries(histogram_correlation
    ${catkin_LIBRARIES}
  )
 
