@@ -1,10 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(teleop1)
+project(kulgur1_gazebo_plugin)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS odom1 roscpp std_msgs)
+find_package(catkin REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -34,7 +34,7 @@ find_package(catkin REQUIRED COMPONENTS odom1 roscpp std_msgs)
 ## Generate added messages and services with any dependencies listed here
 # generate_messages(
 #   DEPENDENCIES
-#   std_msgs
+#   std_msgs  # Or other packages containing msgs
 # )
 
 ###################################################
@@ -45,9 +45,9 @@ find_package(catkin REQUIRED COMPONENTS odom1 roscpp std_msgs)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-   INCLUDE_DIRS include
-#  LIBRARIES teleop1
-#  CATKIN_DEPENDS odom1 roscpp std_msgs
+#  INCLUDE_DIRS include
+#  LIBRARIES kulgur1_gazebo_plugin
+#  CATKIN_DEPENDS other_catkin_pkg
 #  DEPENDS system_lib
 )
 
@@ -56,30 +56,30 @@ catkin_package(
 ###########
 
 ## Specify additional locations of header files
-include_directories(include
-  ${catkin_INCLUDE_DIRS}
-)
+include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
+# Need to add these here, because gazebo is not catkinized.
+  /opt/ros/groovy/stacks/simulator_gazebo/gazebo_msgs/srv_gen/cpp/include
+  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/
+  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/
+  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/physics/
+  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/common/
+ )
 
 ## Declare a cpp library
-# add_library(teleop1
-#   src/${PROJECT_NAME}/teleop1.cpp
-# )
+add_library(kulgur1_plugin
+   src/kulgur1_wheel_turn_and_odometry.cpp
+)
 
 ## Declare a cpp executable
-add_executable(teleop1 src/teleop1.cpp)
-add_executable(kulgur1_teleop src/kulgur1_teleop.cpp)
+# add_executable(kulgur1_gazebo_plugin_node src/kulgur1_gazebo_plugin_node.cpp)
 
 ## Add dependencies to the executable
-# add_dependencies(teleop1_node ${PROJECT_NAME})
+# add_dependencies(kulgur1_gazebo_plugin_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(teleop1
-   ${catkin_LIBRARIES} ncurses
-)
-
-target_link_libraries(kulgur1_teleop
-   ${catkin_LIBRARIES} ncurses
-)
+# target_link_libraries(kulgur1_gazebo_plugin_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -93,7 +93,7 @@ target_link_libraries(kulgur1_teleop
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS teleop1 teleop1_node
+# install(TARGETS kulgur1_gazebo_plugin kulgur1_gazebo_plugin_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -118,7 +118,7 @@ target_link_libraries(kulgur1_teleop
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_teleop1.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_kulgur1_gazebo_plugin.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
