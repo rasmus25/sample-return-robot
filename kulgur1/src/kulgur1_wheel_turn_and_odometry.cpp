@@ -103,10 +103,6 @@ namespace gazebo
         angles.data.push_back(rearWheelJoints[0]->GetAngle(0).Radian());
         angles.data.push_back(rearWheelJoints[1]->GetAngle(0).Radian());
 
-        // revolute2 joint GetAngle(1) is not implemented?
-        // angles.data.push_back(rearWheelJoints[0]->GetAngle(1).Radian());
-        // angles.data.push_back(rearWheelJoints[1]->GetAngle(1).Radian());
-
         wheelRotationsPublisher.publish(angles);
 
         lastPublishTime = currentTime;
@@ -122,10 +118,6 @@ namespace gazebo
 
     void SetRearWheelAngles(const std_msgs::Float64MultiArray::ConstPtr& angles)
     {
-      // For testing, lets set velocities instead.
-      // desiredRearWheelTurnVelocities[0] = angles->data[0];
-      // desiredRearWheelTurnVelocities[1] = angles->data[1];
-
       desiredRearWheelAngles[0] = angles->data[0];
       desiredRearWheelAngles[1] = angles->data[1];
     }

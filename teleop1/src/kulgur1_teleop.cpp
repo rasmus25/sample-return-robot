@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const double WheelRadius 		= 0.95;
+const double WheelRadius 		= 0.095;
 const double WheelBase 			= 0.2; 	// Distance of wheels from robot center axis
 const double WheelAxisDist 		= 0.48; // Distance between wheel axes
 const double TurnWheelJointBase = 0.2;	// 
