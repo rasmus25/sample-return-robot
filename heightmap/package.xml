@@ -44,7 +44,6 @@
   <run_depend>gazebo</run_depend>
   <run_depend>odom1</run_depend>
 
-
   <!-- The export tag contains other, unspecified, tags -->
   <export>
     <!-- You can specify that this package is a metapackage here: -->

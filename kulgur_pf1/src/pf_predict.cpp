@@ -122,7 +122,6 @@ int main(int argc, char **argv)
 	ros::NodeHandle n;
 
 	inited = false;
-	// SetAllParticles(&particles, Vector3d(0.0, 0.0, 0.0));
 
 	ros::Subscriber subscriber = n.subscribe<std_msgs::Float64MultiArray>("/gazebo/wheel_rotations_and_angles", 50, &NewOdometryInfoCallback);
 
@@ -152,7 +151,6 @@ void PredictParticles(Particles* inout_particles, const Vector3d& poseChange)
 		double currentAng = (*inout_particles)(2,i);
 
 		Vector2d particlePoseChange 	= Rotation2D<double>(currentAng) * poseChange.block(0,0,2,1);
-		// cout<<particlePoseChange<<endl<<endl;
 
 		inout_particles->block(0,i,2,1) += particlePoseChange;
 		(*inout_particles)(2,i) 		+= poseChange[2];
@@ -196,8 +194,6 @@ void NewPoseInfoCallback(const gazebo_msgs::ModelStates::ConstPtr& modelStates)
 		SetAllParticles(&particles, Vector3d(lastPose.position.x, lastPose.position.y, poseAngle));
 		inited = true;
 	}
-	// poseInfo->position.x;
-	// poseInfo->position.y;
 }
 
 //
