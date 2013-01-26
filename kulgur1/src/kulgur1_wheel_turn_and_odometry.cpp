@@ -133,7 +133,7 @@ namespace gazebo
 
         for (std::vector<physics::ModelPtr>::iterator it = landmarks.begin(); it != landmarks.end(); ++it)
         {
-          LandmarkMeasurement measurement = Landmark(this->model->GetState().GetPose() + LandmarkSensorPose, (*it)->GetState().GetPose());
+          LandmarkMeasurement measurement = Landmark(this->model->GetState().GetPose() + LandmarksensorPoseInRobot, (*it)->GetState().GetPose());
 
           if (fabs(measurement.bearing) <= LandmarkVisibilityFOV && measurement.distance <= LandmarkVisibilityMaxDist)
           {
@@ -151,9 +151,9 @@ namespace gazebo
     }
 
   private:
-    LandmarkMeasurement Landmark(const math::Pose& sensorPose, const math::Pose& landmarkPose)
+    LandmarkMeasurement Landmark(const math::Pose& sensorPoseInWorld, const math::Pose& landmarkPose)
     {
-      math::Pose landmarkFromSensor = landmarkPose - sensorPose;
+      math::Pose landmarkFromSensor = landmarkPose - sensorPoseInWorld;
 
       LandmarkMeasurement measurement;
 
@@ -161,7 +161,7 @@ namespace gazebo
       measurement.distance  = (landmarkFromSensor.pos - math::Vector3(0, 0, 10)).GetLength();
 
       // Assuming no other rotation besides around z-axis
-      measurement.bearing   = GZ_NORMALIZE(atan2(landmarkFromSensor.pos[1], landmarkFromSensor.pos[0]) - sensorPose.rot.GetAsEuler()[2]);
+      measurement.bearing   = GZ_NORMALIZE(atan2(landmarkFromSensor.pos[1], landmarkFromSensor.pos[0]));
 
       // Assuming the landmark is straight.
       measurement.angle     = 0;
@@ -199,13 +199,13 @@ namespace gazebo
     static const double LandmarkVisibilityPublishFreq = 10;
 
     // The field of view to left and right of robot where the landmark can be seen
-    static const double LandmarkVisibilityFOV     = 50;
+    static const double LandmarkVisibilityFOV     = 1.047/2; // Same value is in model.sdf for camera
 
     // The max distance when Landmark can be seen
     static const double LandmarkVisibilityMaxDist = 50;
 
     //
-    static const math::Pose LandmarkSensorPose;
+    static const math::Pose LandmarksensorPoseInRobot;
 
     double    desiredFrontWheelVelocities[2];
     double    desiredRearWheelAngles[2];
@@ -246,7 +246,8 @@ namespace gazebo
     private: ros::CallbackQueue queue_;
   };
 
-  const math::Pose ROSModelPlugin::LandmarkSensorPose = math::Pose(math::Vector3(0, 0, 0.3), math::Quaternion(0, 0, 0));
+  // Landmark detector (camera?) is on height 0.3m from robot model coordinate center
+  const math::Pose ROSModelPlugin::LandmarksensorPoseInRobot = math::Pose(math::Vector3(0, 0, 0.3), math::Quaternion(0, 0, 0));
 
   // Register this plugin with the simulator
   GZ_REGISTER_MODEL_PLUGIN(ROSModelPlugin)
