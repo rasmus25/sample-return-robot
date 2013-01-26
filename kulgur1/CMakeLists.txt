@@ -22,6 +22,7 @@ add_message_files(
 	FILES
    	msg/LandmarkMeasurement.msg
    	msg/LandmarkMeasurementArray.msg
+   	msg/LowOdometry.msg
 )
 
 ## Generate services in the 'srv' folder

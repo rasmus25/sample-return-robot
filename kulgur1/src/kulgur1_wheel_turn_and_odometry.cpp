@@ -11,6 +11,7 @@
 
 #include "kulgur1/LandmarkMeasurement.h"
 #include "kulgur1/LandmarkMeasurementArray.h"
+#include "kulgur1/LowOdometry.h"
 
 namespace gazebo
 {   
@@ -48,15 +49,15 @@ namespace gazebo
       // ROS Nodehandle
       this->node = new ros::NodeHandle("~");
 
-      this->frontWheelVelocitiesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("set_wheel_velocities", 
+      this->frontWheelVelocitiesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("kulgur1/set_wheel_velocities", 
         50, &ROSModelPlugin::SetFrontWheelVelocities, this);
 
-      this->rearWheelAnglesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("set_rear_wheel_angles",
+      this->rearWheelAnglesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("kulgur1/set_rear_wheel_angles",
         50, &ROSModelPlugin::SetRearWheelAngles, this);
 
-      this->wheelRotationsPublisher = this->node->advertise<std_msgs::Float64MultiArray>("wheel_rotations_and_angles", 50);
+      this->odometryPublisher = this->node->advertise<LowOdometry>("kulgur1/odometry", 50);
 
-      this->landmarkMeasurementPublisher = this->node->advertise<LandmarkMeasurementArray>("visible_landmarks", 50);
+      this->landmarkMeasurementPublisher = this->node->advertise<LandmarkMeasurementArray>("kulgur1/visible_landmarks", 50);
 
       // Listen to the update event. This event is broadcast every
       // simulation iteration.
@@ -111,15 +112,17 @@ namespace gazebo
 
       if(currentTime - odomLastPublishTime >= odomPublishingPeriod)
       {
-        std_msgs::Float64MultiArray angles;
+        LowOdometry msg;
 
-        angles.data.push_back(frontWheelJoints[0]->GetAngle(0).Radian());
-        angles.data.push_back(frontWheelJoints[1]->GetAngle(0).Radian());
+        msg.front_wheel_rotations[0] = frontWheelJoints[0]->GetAngle(0).Radian();
+        msg.front_wheel_rotations[1] = frontWheelJoints[1]->GetAngle(0).Radian();
 
-        angles.data.push_back(rearWheelJoints[0]->GetAngle(0).Radian());
-        angles.data.push_back(rearWheelJoints[1]->GetAngle(0).Radian());
+        msg.rear_wheel_angles[0] = rearWheelJoints[0]->GetAngle(0).Radian();
+        msg.rear_wheel_angles[1] = rearWheelJoints[1]->GetAngle(0).Radian();
 
-        wheelRotationsPublisher.publish(angles);
+        GazeboTimeToRosTime(currentTime, &(msg.timestamp));
+
+        odometryPublisher.publish(msg);
 
         odomLastPublishTime = currentTime;
       }
@@ -141,8 +144,7 @@ namespace gazebo
           }
         }
 
-        measurementsMsg.timestamp.sec   = currentTime.sec;
-        measurementsMsg.timestamp.nsec  = currentTime.nsec;
+        GazeboTimeToRosTime(currentTime, &measurementsMsg.timestamp);
 
         landmarkMeasurementPublisher.publish(measurementsMsg);
 
@@ -179,6 +181,11 @@ namespace gazebo
     {
       desiredRearWheelAngles[0] = angles->data[0];
       desiredRearWheelAngles[1] = angles->data[1];
+    }
+
+    void GazeboTimeToRosTime(const common::Time& gazeboTime, ros::Time* out_rosTime)
+    {
+      *out_rosTime = ros::Time(gazeboTime.sec, gazeboTime.nsec);
     }
     
     // Max force applied to wheel joint, to reach desired velocity. Define robot's linear acceleration.
@@ -222,7 +229,7 @@ namespace gazebo
     ros::Subscriber   rearWheelAnglesSubscriber;
     ros::Subscriber   frontWheelVelocitiesSubscriber;
 
-    ros::Publisher    wheelRotationsPublisher;
+    ros::Publisher    odometryPublisher;
     ros::Publisher    landmarkMeasurementPublisher;
 
     common::Time odomPublishingPeriod;
