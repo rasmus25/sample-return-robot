@@ -47,8 +47,8 @@ int main(int argc, char** argv)
    setMouseCallback( "window", onMouse, 0 );
 
    namedWindow( "maskwindow", CV_WINDOW_NORMAL );
-   createTrackbar( "Lower thresh", "maskwindow", &lower_threshold, 255, NULL );
-   createTrackbar( "Upper thresh", "maskwindow", &upper_threshold, 255, NULL );
+   createTrackbar( "Lower thresh", "maskwindow", &lower_threshold, 180, NULL );
+   createTrackbar( "Upper thresh", "maskwindow", &upper_threshold, 180, NULL );
 
    //pyrMeanShiftFiltering( img, res, sp, sr, 3);
 //   imwrite("output.png", res);
@@ -95,17 +95,58 @@ static void onMouse( int event, int x, int y, int, void* )
 			threshold(thresholded_image, thresholded_image, 1, 255, CV_THRESH_BINARY);
 			imshow("maskwindow", thresholded_image);
 
-			stringstream message;
+//			stringstream message;
+//
+//			message << "HSV: "
+//					<< (unsigned int) hsv_planes[0].at<unsigned char>(x,y) << ","
+//					<< (unsigned int) hsv_planes[1].at<unsigned char>(x,y) << ","
+//					<< (unsigned int) hsv_planes[2].at<unsigned char>(x,y);
+//			res.copyTo(threshold_helper);
+//			putText(threshold_helper, message.str(), cvPoint(60,60),
+//					FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0,100,250), 2);
+//			imshow( "window", threshold_helper );
 
-			message << "HSV: "
-					<< (unsigned int) hsv_planes[0].at<unsigned char>(x,y) << ","
-					<< (unsigned int) hsv_planes[1].at<unsigned char>(x,y) << ","
-					<< (unsigned int) hsv_planes[2].at<unsigned char>(x,y);
-			res.copyTo(threshold_helper);
-			putText(threshold_helper, message.str(), cvPoint(60,60),
-					FONT_HERSHEY_COMPLEX_SMALL, 1.0, cvScalar(0,100,250), 2);
-			imshow( "window", threshold_helper );
+			// Draw histogram
+			/// Establish the number of bins
+			int histSize = 180;
 
+			/// Set the range
+			float range[] = { 0, 180 } ;
+			const float* histRange = { range };
+
+			bool uniform = true; bool accumulate = false;
+
+			Mat hue_hist;
+
+			calcHist( &hsv_planes[0], 1, 0, Mat(), hue_hist, 1, &histSize, &histRange, uniform, accumulate );
+
+			// Draw the histograms for B, G and R
+			int hist_w = 512; int hist_h = 400;
+			int bin_w = cvRound( (double) hist_w/histSize );
+
+			Mat histImage( hist_h, hist_w, CV_8UC3, Scalar( 0,0,0) );
+
+			/// Normalize the result to [ 0, histImage.rows ]
+			normalize(hue_hist, hue_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
+
+			Scalar color;
+			/// Draw for each channel
+			for( int i = 1; i < histSize; i++ )
+			{
+
+				if(i <= lower_threshold || i >= upper_threshold)
+					color = Scalar( 255, 0, 0);
+				else
+					color = Scalar( 0, 0, 255);
+				line( histImage, Point( bin_w*(i-1), hist_h - cvRound(hue_hist.at<float>(i-1)) ) ,
+							   Point( bin_w*(i), hist_h - cvRound(hue_hist.at<float>(i)) ),
+							   color, 2, 8, 0  );
+			}
+
+			/// Display
+//			namedWindow("calcHist Demo", CV_WINDOW_AUTOSIZE );
+//			imshow("calcHist Demo", histImage );
+			imshow("window", histImage);
 			break;
 		}
 		default:
