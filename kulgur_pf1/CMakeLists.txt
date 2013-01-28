@@ -56,6 +56,8 @@ catkin_package(
 ## Build ##
 ###########
 
+set(CMAKE_CXX_FLAGS "-std=c++0x")
+
 ## Specify additional locations of header files
 include_directories(include
   ${catkin_INCLUDE_DIRS}

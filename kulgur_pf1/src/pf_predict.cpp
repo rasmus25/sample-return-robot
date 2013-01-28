@@ -1,3 +1,5 @@
+#include <random>
+
 #include <ros/ros.h>
 #include <std_msgs/Float64MultiArray.h>
 #include <gazebo_msgs/ModelStates.h>
@@ -23,7 +25,7 @@ using namespace kulgur1;
 //
 //
 
-const int ParticleCount = 1;
+const int ParticleCount = 1000;
 typedef Matrix<double, 3, ParticleCount>  Particles;
 
 void SetAllParticles(Particles* inout_particles, const Vector3d& state);
@@ -34,6 +36,9 @@ void DrawParticles(const Particles& particles, CDisplayWindowPlots& plots);
 
 void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo);
 
+void AddNoise(Particles* inout_particles, const Matrix<double, 3, 2>& predictionJacobian, 
+	const Vector4d& wheelRotations, const Vector2d& turnWheelAngles);
+
 //
 //
 //
@@ -41,10 +46,14 @@ void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo);
 Particles 			particles;
 KulgurOdometry 		odometry;
 
+Vector4d			prevWheelRotations;
+
 CDisplayWindowPlots plots("Particles");
 
 geometry_msgs::Pose lastPose;
 bool 				inited;
+
+default_random_engine generator;
 
 int main(int argc, char **argv)
 {
@@ -57,6 +66,8 @@ int main(int argc, char **argv)
 
 	ros::Rate loopRate(10);
 
+	// plots.hold_on();
+
 	ros::spin();
 
 	// while(ros::ok() && plots.isOpen())
@@ -66,6 +77,29 @@ int main(int argc, char **argv)
 	// }
 
 	return 0;
+}
+
+//
+//
+//
+
+void AddNoise(Particles* inout_particles, const Matrix<double, 3, 2>& predictionJacobian, 
+	const Vector4d& wheelRotations, const Vector2d& turnWheelAngles)
+{
+	double turnNoise 		= 0.001 * M_PI / 180;
+	double rotationsNoise 	= 0.001 * KulgurOdometry::WheelRadius * (wheelRotations[0] + wheelRotations[1]) / 2;
+
+	Particles noiseMatrix;
+
+	normal_distribution<double> turnNoiseDist(0, turnNoise);
+	normal_distribution<double> rotNoiseDist(0, rotationsNoise);
+
+	for (int i = 0; i < noiseMatrix.cols() ; ++i)
+	{
+		noiseMatrix.col(i) = predictionJacobian * Vector2d(rotNoiseDist(generator), turnNoiseDist(generator));
+	}
+
+	*inout_particles += noiseMatrix;
 }
 
 //
@@ -103,18 +137,24 @@ void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo)
 	{
 		double poseAngle = 2.0*acos(lastPose.orientation.w);	// NB! Valid only for our case when x=y=0
 		SetAllParticles(&particles, Vector3d(lastPose.position.x, lastPose.position.y, poseAngle));
+		prevWheelRotations = wheelRotations;
 		inited = true;
+
+		return;
 	}
 
-	Vector3d poseChange = odometry.PoseChange(wheelRotations, turnWheelAngles);
+	Vector3d poseChange = odometry.PoseChange(wheelRotations - prevWheelRotations, turnWheelAngles);
 	PredictParticles(&particles, poseChange);
+	AddNoise(&particles, odometry.PredictJacobian(wheelRotations, turnWheelAngles), wheelRotations, turnWheelAngles);
 
 	DrawParticles(particles, plots);
 
 	//
 	plots.hold_on();
-	plots.plot(vector<double>(1, lastPose.position.x), vector<double>(1, lastPose.position.y), "b.3");
+	plots.plot(vector<double>(1, lastPose.position.x), vector<double>(1, lastPose.position.y), "b.1");
 	plots.hold_off();
+
+	prevWheelRotations = wheelRotations;
 }
 
 //
@@ -123,7 +163,7 @@ void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo)
 
 void DrawParticles(const Particles& particles, CDisplayWindowPlots& plots)
 {
-	plots.plot(particles.row(0), particles.row(1), "g.3");
+	plots.plot(particles.row(0), particles.row(1), "g.1");
 }
 
 //
