@@ -12,11 +12,13 @@ public:
 	static const double MinWheelTurnAngle;	// If wheel angles are smaller than this, then turn circle is not calculated and going straight.
 
 	KulgurOdometry();
-	Eigen::Vector3d PoseChange(const Eigen::Vector4d& wheelRotations, const Eigen::Vector2d rearWheelAngles);
+	Eigen::Vector3d PoseChange(const Eigen::Vector4d& wheelRotations, const Eigen::Vector2d rearWheelAngles) const;
+
+	Eigen::Matrix<double, 3, 2>  PredictJacobian(const Eigen::Vector4d& wheelRotations, const Eigen::Vector2d& rearWheelAngles) const;
+
+	Eigen::Vector3d PredictNoiseStdDev(const Eigen::Vector3d& poseChange) const;
 
 private:
-	bool 		inited;
-
-	Eigen::Vector4d 	prevWheelRotations;
-	Eigen::Vector2d 	prevRearWheelAngles;
+	double 			distanceTravelled(const Eigen::Vector4d& wheelRotations) const;
+	double 			bearingChange(const Eigen::Vector4d& wheelRotations, const Eigen::Vector2d rearWheelAngles) const;
 };

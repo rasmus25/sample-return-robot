@@ -1,5 +1,7 @@
 #include "KulgurOdometry.h"
 
+#include <cmath>
+
 const double KulgurOdometry::WheelRadius 		= 0.095;
 const double KulgurOdometry::WheelBase 			= 0.2; 	// Distance of wheels from robot center axis
 const double KulgurOdometry::WheelAxisDist 		= 0.48; // Distance between wheel axes
@@ -9,28 +11,65 @@ const double KulgurOdometry::MinWheelTurnAngle 	= 1e-6;	// If wheel angles are s
 
 using namespace Eigen;
 
-Vector3d KulgurOdometry::PoseChange(const Vector4d& wheelRotations, const Vector2d rearWheelAngles)
+Eigen::Matrix<double, 3, 2>  KulgurOdometry::PredictJacobian(const Vector4d& wheelRotations, const Vector2d& rearWheelAngles) const
 {
-	if(!inited)
-	{
-		prevWheelRotations 	= wheelRotations;
-		prevRearWheelAngles = rearWheelAngles;
+	double beta = (rearWheelAngles[0] + rearWheelAngles[1])/2;			// Average angle of turning wheels
+	double dPhi = bearingChange(wheelRotations, rearWheelAngles);		// Change of robot's bearing
+	double Da 	= distanceTravelled(wheelRotations);					// Average circular section distance travelled by wheels
 
-		inited = true;
+	double D_dPhi__D_beta 	= pow(1/cos(beta), 2) * Da / WheelAxisDist;
+	double D_dPhi__D_Da		= tan(beta) / WheelAxisDist;
 
-		return Vector3d(0, 0, 0);
-	}
+	double D_x__D_Da 	= -sin(dPhi/2) * D_dPhi__D_Da + cos(dPhi/2);
+	double D_y__D_Da 	= cos(dPhi/2) * D_dPhi__D_Da + sin(dPhi/2);
 
-	Vector4d 	deltaWheels 	= wheelRotations - prevWheelRotations;							// Wheel rotation change from last call
-	Vector2d	frontWheelDist	= Vector2d(deltaWheels[0], deltaWheels[1]) * WheelRadius;		// Distance travelled by the two front wheels
+	double D_x__D_beta 		= -sin(dPhi/2) * D_dPhi__D_beta;
+	double D_y__D_beta		= cos(dPhi/2) * D_dPhi__D_beta;
 
-	double 		avgWheelDist  	= (frontWheelDist[0] + frontWheelDist[1])/2;
+	Matrix<double, 3, 2> jac;
 
-	// This is probably not the best way for calculating the azimuth change
-	// double turnAngleByFrontWheels = (frontWheelDist[0] - frontWheelDist[1])/(2*WheelBase);
+	jac << 	D_x__D_Da, D_x__D_beta,
+			D_y__D_Da, D_y__D_beta,
+			D_dPhi__D_Da, D_dPhi__D_beta;
 
-	double 		bearingChange = 0;
+	return jac;
+}
+
+//
+// Uses average wheel rotations for travelled distance and average rearWheelAngles
+// for calculating turning radius accordig to 
+// TurningRadius = (Distance of wheel axes) / tan (average angle of turning wheels)
+// The travelled segment of the circle is approximated by a line.
+// Output is change of robot pose [x, y, angle] in robot's coordinate frame.
+//
+Vector3d KulgurOdometry::PoseChange(const Vector4d& wheelRotations, const Vector2d rearWheelAngles) const
+{
+	double 		Da 	 = distanceTravelled(wheelRotations);					// Distance travelled averaged for two wheels
+	double 		dPhi = bearingChange(wheelRotations, rearWheelAngles);		// Bearing change
+
+
+	Vector3d 	poseChange;
+
+	// Approximating the travelled circle to line.
+	poseChange[0] = cos(dPhi/2) * Da;
+	poseChange[1] = sin(dPhi/2) * Da;
+	poseChange[2] = dPhi;
+
+	return poseChange;
+}
+
+double KulgurOdometry::distanceTravelled(const Eigen::Vector4d& wheelRotations) const
+{
+	Vector2d	frontWheelDist	= Vector2d(wheelRotations[0], wheelRotations[1]) * WheelRadius;		// Distance travelled by the two front wheels
+
+	return (frontWheelDist[0] + frontWheelDist[1])/2;
+}
+
+double KulgurOdometry::bearingChange(const Eigen::Vector4d& wheelRotations, const Eigen::Vector2d rearWheelAngles) const
+{
+	double		bearingChange 		= 0;
 	double 		avgWheelTurnAng 	= (rearWheelAngles[0] + rearWheelAngles[1])/2;
+	double 		avgWheelDist 		= distanceTravelled(wheelRotations);
 
 	if(fabs(avgWheelTurnAng) >= MinWheelTurnAngle)
 	{
@@ -39,20 +78,9 @@ Vector3d KulgurOdometry::PoseChange(const Vector4d& wheelRotations, const Vector
 		bearingChange 				= avgWheelDist / avgWheelTurnRadius;
 	}
 
-	Vector3d 	poseChange;
-
-	// Approximating the travelled circle to line.
-	poseChange[0] = cos(bearingChange/2) * avgWheelDist;
-	poseChange[1] = sin(bearingChange/2) * avgWheelDist;
-	poseChange[2] = bearingChange;
-
-	prevWheelRotations 	= wheelRotations;
-	prevRearWheelAngles = rearWheelAngles;
-
-	return poseChange;
+	return bearingChange;
 }
 
 KulgurOdometry::KulgurOdometry()
 {
-	inited = false;
 }
