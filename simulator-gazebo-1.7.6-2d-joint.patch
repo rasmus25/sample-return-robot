@@ -1,0 +1,13 @@
+Index: groovy_ws/simulator_gazebo/gazebo/build/gazebo-r4533eaee93a0/gazebo/physics/ode/ODEHinge2Joint.cc
+===================================================================
+--- groovy_ws.orig/simulator_gazebo/gazebo/build/gazebo-r4533eaee93a0/gazebo/physics/ode/ODEHinge2Joint.cc	2012-11-21 20:02:14.000000000 +0200
++++ groovy_ws/simulator_gazebo/gazebo/build/gazebo-r4533eaee93a0/gazebo/physics/ode/ODEHinge2Joint.cc	2013-01-28 15:34:34.887556238 +0200
+@@ -110,7 +110,7 @@
+       result = dJointGetHinge2Angle1(this->jointId);
+   }
+ 
+-  return math::Angle(0);
++  return math::Angle(result);
+ }
+ 
+ //////////////////////////////////////////////////
