@@ -4,7 +4,7 @@ project(kulgur1)
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED roscpp message_generation std_msgs)
+find_package(catkin REQUIRED roscpp message_generation std_msgs geometry_msgs rosbag)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -33,7 +33,11 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages()
+generate_messages(
+  DEPENDENCIES
+  std_msgs
+  geometry_msgs
+)
 
 ###################################################
 ## Declare things to be passed to other projects ##
@@ -70,6 +74,7 @@ add_library(kulgur1_plugin
 
 ## Declare a cpp executable
 # add_executable(kulgur1_gazebo_plugin_node src/kulgur1_gazebo_plugin_node.cpp)
+add_executable(bag2text src/bag2text.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(kulgur1_gazebo_plugin_node ${PROJECT_NAME})
@@ -78,6 +83,8 @@ add_library(kulgur1_plugin
 # target_link_libraries(kulgur1_gazebo_plugin_node
 #   ${catkin_LIBRARIES}
 # )
+
+target_link_libraries(bag2text ${catkin_LIBRARIES})
 
 #############
 ## Install ##

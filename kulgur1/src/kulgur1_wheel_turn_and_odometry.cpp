@@ -9,7 +9,6 @@
 #include <ros/callback_queue.h>
 #include <vector>
 
-#include "kulgur1/LandmarkMeasurement.h"
 #include "kulgur1/LandmarkMeasurementArray.h"
 #include "kulgur1/LowOdometry.h"
 
@@ -120,6 +119,8 @@ namespace gazebo
         msg.rear_wheel_angles[0] = rearWheelJoints[0]->GetAngle(0).Radian();
         msg.rear_wheel_angles[1] = rearWheelJoints[1]->GetAngle(0).Radian();
 
+        GazeboPoseToRosPose(this->model->GetState().GetPose(), &msg.true_pose);
+
         GazeboTimeToRosTime(currentTime, &(msg.timestamp));
 
         odometryPublisher.publish(msg);
@@ -186,6 +187,25 @@ namespace gazebo
     void GazeboTimeToRosTime(const common::Time& gazeboTime, ros::Time* out_rosTime)
     {
       *out_rosTime = ros::Time(gazeboTime.sec, gazeboTime.nsec);
+    }
+
+    void GazeboPoseToRosPose(const math::Pose& gazeboPose, geometry_msgs::Pose* out_rosPose)
+    {
+      geometry_msgs::Point point;
+
+      point.x = gazeboPose.pos.x;
+      point.y = gazeboPose.pos.y;
+      point.z = gazeboPose.pos.z;
+
+      geometry_msgs::Quaternion rot;
+
+      rot.x = gazeboPose.rot.x;
+      rot.y = gazeboPose.rot.y;
+      rot.z = gazeboPose.rot.z;
+      rot.w = gazeboPose.rot.w;
+
+      out_rosPose->position = point;
+      out_rosPose->orientation = rot;
     }
     
     // Max force applied to wheel joint, to reach desired velocity. Define robot's linear acceleration.
