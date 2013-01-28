@@ -68,6 +68,8 @@ include_directories(include
 #   src/${PROJECT_NAME}/kulgur_pf1.cpp
 # )
 
+add_library(KulgurOdometry src/KulgurOdometry.cpp)
+
 ## Declare a cpp executable
 add_executable(pf_predict src/pf_predict.cpp)
 
@@ -76,7 +78,7 @@ add_executable(pf_predict src/pf_predict.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(pf_predict
-   ${catkin_LIBRARIES} ${MRPT_LIBS}
+   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
 )
 
 #############

@@ -4,6 +4,11 @@
 
 #include <mrpt/base.h>         // Include all classes in mrpt-base and its dependencies
 #include <mrpt/gui.h>
+
+#include "KulgurOdometry.h"
+
+#include "kulgur1/LandmarkMeasurementArray.h"
+#include "kulgur1/LowOdometry.h"
  
 using namespace mrpt;          // Global methods, and data types.
 using namespace mrpt::utils;   // Select namespace for serialization, utilities, etc...
@@ -12,81 +17,7 @@ using namespace mrpt::gui;
 using namespace Eigen;
 using namespace std;
 
-//
-//
-//
-
-class KulgurOdometry
-{
-public:
-	static const double WheelRadius;
-	static const double WheelBase; 			// Distance of wheels from robot center axis
-	static const double WheelAxisDist; 		// Distance between wheel axes
-	static const double TurnWheelJointBase;	//
-
-	static const double MinWheelTurnAngle;	// If wheel angles are smaller than this, then turn circle is not calculated and going straight.
-
-	Vector3d PoseChange(const Vector4d& wheelRotations, const Vector2d rearWheelAngles)
-	{
-		if(!inited)
-		{
-			prevWheelRotations 	= wheelRotations;
-			prevRearWheelAngles = rearWheelAngles;
-
-			inited = true;
-
-			return Vector3d(0, 0, 0);
-		}
-
-		Vector4d 	deltaWheels 	= wheelRotations - prevWheelRotations;							// Wheel rotation change from last call
-		Vector2d	frontWheelDist	= Vector2d(deltaWheels[0], deltaWheels[1]) * WheelRadius;		// Distance travelled by the two front wheels
-
-		double 		avgWheelDist  	= (frontWheelDist[0] + frontWheelDist[1])/2;
-
-		// This is probably not the best way for calculating the azimuth change
-		// double turnAngleByFrontWheels = (frontWheelDist[0] - frontWheelDist[1])/(2*WheelBase);
-
-		double 		bearingChange = 0;
-		double 		avgWheelTurnAng 	= (rearWheelAngles[0] + rearWheelAngles[1])/2;
-
-		if(fabs(avgWheelTurnAng) >= MinWheelTurnAngle)
-		{
-			double avgWheelTurnRadius 	= WheelAxisDist / tan(avgWheelTurnAng);
-
-			bearingChange 				= avgWheelDist / avgWheelTurnRadius;
-		}
-
-		Vector3d 	poseChange;
-
-		// Approximating the travelled circle to line.
-		poseChange[0] = cos(bearingChange/2) * avgWheelDist;
-		poseChange[1] = sin(bearingChange/2) * avgWheelDist;
-		poseChange[2] = bearingChange;
-
-		prevWheelRotations 	= wheelRotations;
-		prevRearWheelAngles = rearWheelAngles;
-
-		return poseChange;
-	}
-
-	KulgurOdometry()
-	{
-		inited = false;
-	}
-
-private:
-	bool 		inited;
-
-	Vector4d 	prevWheelRotations;
-	Vector2d 	prevRearWheelAngles;
-};
-
-const double KulgurOdometry::WheelRadius 		= 0.095;
-const double KulgurOdometry::WheelBase 			= 0.2; 	// Distance of wheels from robot center axis
-const double KulgurOdometry::WheelAxisDist 		= 0.48; // Distance between wheel axes
-const double KulgurOdometry::TurnWheelJointBase = 0.2;	//
-
-const double KulgurOdometry::MinWheelTurnAngle 	= 1e-6;	// If wheel angles are smaller than this, then turn circle is not calculated and going straight.
+using namespace kulgur1;
 
 //
 //
@@ -101,8 +32,7 @@ void PredictParticles(Particles* inout_particles, const Vector3d& poseChange);
 
 void DrawParticles(const Particles& particles, CDisplayWindowPlots& plots);
 
-void NewOdometryInfoCallback(const std_msgs::Float64MultiArray::ConstPtr& odometryInfo);
-void NewPoseInfoCallback(const gazebo_msgs::ModelStates::ConstPtr& modelStates);
+void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo);
 
 //
 //
@@ -123,9 +53,7 @@ int main(int argc, char **argv)
 
 	inited = false;
 
-	ros::Subscriber subscriber = n.subscribe<std_msgs::Float64MultiArray>("/gazebo/wheel_rotations_and_angles", 50, &NewOdometryInfoCallback);
-
-	ros::Subscriber modelPoseSubscriber = n.subscribe<gazebo_msgs::ModelStates>("/gazebo/model_states", 50, &NewPoseInfoCallback);
+	ros::Subscriber subscriber = n.subscribe<LowOdometry>("/gazebo/kulgur1/odometry", 50, &NewOdometryInfoCallback);
 
 	ros::Rate loopRate(10);
 
@@ -161,13 +89,22 @@ void PredictParticles(Particles* inout_particles, const Vector3d& poseChange)
 //
 //
 
-void NewOdometryInfoCallback(const std_msgs::Float64MultiArray::ConstPtr& odometryInfo)
+void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo)
 {
 	Vector4d wheelRotations(0, 0, 0, 0);
 	Vector2d turnWheelAngles(0, 0);
 
-	for(int i = 0 ; i < 2 ; i++) 	wheelRotations[i] = odometryInfo->data[i];
-	for(int i = 0 ; i < 2 ; i++) 	turnWheelAngles[i] = odometryInfo->data[2 + i];
+	for(int i = 0 ; i < 2 ; i++) 	wheelRotations[i] = odometryInfo->front_wheel_rotations[i];
+	for(int i = 0 ; i < 2 ; i++) 	turnWheelAngles[i] = odometryInfo->rear_wheel_angles[i];
+
+	lastPose = odometryInfo->true_pose;
+
+	if(!inited)
+	{
+		double poseAngle = 2.0*acos(lastPose.orientation.w);	// NB! Valid only for our case when x=y=0
+		SetAllParticles(&particles, Vector3d(lastPose.position.x, lastPose.position.y, poseAngle));
+		inited = true;
+	}
 
 	Vector3d poseChange = odometry.PoseChange(wheelRotations, turnWheelAngles);
 	PredictParticles(&particles, poseChange);
@@ -178,22 +115,6 @@ void NewOdometryInfoCallback(const std_msgs::Float64MultiArray::ConstPtr& odomet
 	plots.hold_on();
 	plots.plot(vector<double>(1, lastPose.position.x), vector<double>(1, lastPose.position.y), "b.3");
 	plots.hold_off();
-}
-
-//
-//
-//
-
-void NewPoseInfoCallback(const gazebo_msgs::ModelStates::ConstPtr& modelStates)
-{
-	lastPose = modelStates->pose[1];
-
-	if(!inited)
-	{
-		double poseAngle = 2.0*acos(lastPose.orientation.w);	// NB! Valid only for our case when x=y=0
-		SetAllParticles(&particles, Vector3d(lastPose.position.x, lastPose.position.y, poseAngle));
-		inited = true;
-	}
 }
 
 //
