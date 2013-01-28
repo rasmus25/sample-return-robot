@@ -1,0 +1,3 @@
+<launch>
+	<node name="pf_predict_dbg" pkg="kulgur_pf1" type="pf_predict" launch-prefix="gnome-terminal -x gdb -d ~/catkin_ws/src/ --args"/>
+</launch>

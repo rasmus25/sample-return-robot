@@ -7,9 +7,16 @@
 #include "ros/ros.h"
 #include "std_msgs/Float64MultiArray.h"
 #include <ros/callback_queue.h>
+#include <vector>
+
+#include "kulgur1/LandmarkMeasurementArray.h"
+#include "kulgur1/LowOdometry.h"
 
 namespace gazebo
 {   
+  using namespace kulgur1;
+  using namespace std;
+
   class ROSModelPlugin : public ModelPlugin
   {
 
@@ -20,8 +27,11 @@ namespace gazebo
       int argc = 0;
       ros::init(argc, NULL, name);
 
-      publishingPeriod  = common::Time(1/WheelRotationsPublishPeriod);
-      lastPublishTime   = common::Time(0.0);
+      odomPublishingPeriod  = common::Time(1/WheelRotationsPublishFreq);
+      odomLastPublishTime   = common::Time(0.0);
+
+      landmPublishingPeriod = common::Time(1/LandmarkVisibilityPublishFreq);
+      landmLastPublishTime  = common::Time(0.0);
     }
 
     public: ~ROSModelPlugin()
@@ -38,13 +48,15 @@ namespace gazebo
       // ROS Nodehandle
       this->node = new ros::NodeHandle("~");
 
-      this->frontWheelVelocitiesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("set_wheel_velocities", 
+      this->frontWheelVelocitiesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("kulgur1/set_wheel_velocities", 
         50, &ROSModelPlugin::SetFrontWheelVelocities, this);
 
-      this->rearWheelAnglesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("set_rear_wheel_angles",
+      this->rearWheelAnglesSubscriber = this->node->subscribe<std_msgs::Float64MultiArray>("kulgur1/set_rear_wheel_angles",
         50, &ROSModelPlugin::SetRearWheelAngles, this);
 
-      this->wheelRotationsPublisher = this->node->advertise<std_msgs::Float64MultiArray>("wheel_rotations_and_angles", 50);
+      this->odometryPublisher = this->node->advertise<LowOdometry>("kulgur1/odometry", 50);
+
+      this->landmarkMeasurementPublisher = this->node->advertise<LandmarkMeasurementArray>("kulgur1/visible_landmarks", 50);
 
       // Listen to the update event. This event is broadcast every
       // simulation iteration.
@@ -66,6 +78,10 @@ namespace gazebo
 
       rearWheelJoints[0]->SetMaxForce(0, RearWheelTurnMaxForce);
       rearWheelJoints[1]->SetMaxForce(0, RearWheelTurnMaxForce);
+
+      //
+      landmarks.push_back(this->world->GetModel("pole1"));
+      landmarks.push_back(this->world->GetModel("pole2"));
     }
 
     // Called by the world update start event
@@ -88,32 +104,74 @@ namespace gazebo
         rearWheelJoints[i]->SetVelocity(0, desiredRearWheelTurnVelocities[i]);
       }
 
-      //
+      //  
       //
       //
       common::Time currentTime =  this->world->GetSimTime();
 
-      if(currentTime - lastPublishTime >= publishingPeriod)
+      if(currentTime - odomLastPublishTime >= odomPublishingPeriod)
       {
-        std_msgs::Float64MultiArray angles;
+        LowOdometry msg;
 
-        angles.data.push_back(frontWheelJoints[0]->GetAngle(0).Radian());
-        angles.data.push_back(frontWheelJoints[1]->GetAngle(0).Radian());
+        msg.front_wheel_rotations[0] = frontWheelJoints[0]->GetAngle(0).Radian();
+        msg.front_wheel_rotations[1] = frontWheelJoints[1]->GetAngle(0).Radian();
 
-        angles.data.push_back(rearWheelJoints[0]->GetAngle(0).Radian());
-        angles.data.push_back(rearWheelJoints[1]->GetAngle(0).Radian());
+        msg.rear_wheel_angles[0] = rearWheelJoints[0]->GetAngle(0).Radian();
+        msg.rear_wheel_angles[1] = rearWheelJoints[1]->GetAngle(0).Radian();
 
-        // revolute2 joint GetAngle(1) is not implemented?
-        // angles.data.push_back(rearWheelJoints[0]->GetAngle(1).Radian());
-        // angles.data.push_back(rearWheelJoints[1]->GetAngle(1).Radian());
+        GazeboPoseToRosPose(this->model->GetState().GetPose(), &msg.true_pose);
 
-        wheelRotationsPublisher.publish(angles);
+        GazeboTimeToRosTime(currentTime, &(msg.timestamp));
 
-        lastPublishTime = currentTime;
+        odometryPublisher.publish(msg);
+
+        odomLastPublishTime = currentTime;
+      }
+
+      //
+      if (currentTime - landmLastPublishTime >= landmPublishingPeriod)
+      {
+        std::vector<LandmarkMeasurement> landmarkMeasurements;
+
+        LandmarkMeasurementArray  measurementsMsg;
+
+        for (std::vector<physics::ModelPtr>::iterator it = landmarks.begin(); it != landmarks.end(); ++it)
+        {
+          LandmarkMeasurement measurement = Landmark(this->model->GetState().GetPose() + LandmarksensorPoseInRobot, (*it)->GetState().GetPose());
+
+          if (fabs(measurement.bearing) <= LandmarkVisibilityFOV && measurement.distance <= LandmarkVisibilityMaxDist)
+          {
+            measurementsMsg.measurements.push_back(measurement);
+          }
+        }
+
+        GazeboTimeToRosTime(currentTime, &measurementsMsg.timestamp);
+
+        landmarkMeasurementPublisher.publish(measurementsMsg);
+
+        landmLastPublishTime = currentTime;
       }
     }
 
   private:
+    LandmarkMeasurement Landmark(const math::Pose& sensorPoseInWorld, const math::Pose& landmarkPose)
+    {
+      math::Pose landmarkFromSensor = landmarkPose - sensorPoseInWorld;
+
+      LandmarkMeasurement measurement;
+
+      // Pole coordinates are defined at the middle. Currently height 10.
+      measurement.distance  = (landmarkFromSensor.pos - math::Vector3(0, 0, 10)).GetLength();
+
+      // Assuming no other rotation besides around z-axis
+      measurement.bearing   = GZ_NORMALIZE(atan2(landmarkFromSensor.pos[1], landmarkFromSensor.pos[0]));
+
+      // Assuming the landmark is straight.
+      measurement.angle     = 0;
+
+      return measurement;
+    }
+
     void SetFrontWheelVelocities(const std_msgs::Float64MultiArray::ConstPtr& velocities)
     {
       desiredFrontWheelVelocities[0] = velocities->data[0];
@@ -122,12 +180,32 @@ namespace gazebo
 
     void SetRearWheelAngles(const std_msgs::Float64MultiArray::ConstPtr& angles)
     {
-      // For testing, lets set velocities instead.
-      // desiredRearWheelTurnVelocities[0] = angles->data[0];
-      // desiredRearWheelTurnVelocities[1] = angles->data[1];
-
       desiredRearWheelAngles[0] = angles->data[0];
       desiredRearWheelAngles[1] = angles->data[1];
+    }
+
+    void GazeboTimeToRosTime(const common::Time& gazeboTime, ros::Time* out_rosTime)
+    {
+      *out_rosTime = ros::Time(gazeboTime.sec, gazeboTime.nsec);
+    }
+
+    void GazeboPoseToRosPose(const math::Pose& gazeboPose, geometry_msgs::Pose* out_rosPose)
+    {
+      geometry_msgs::Point point;
+
+      point.x = gazeboPose.pos.x;
+      point.y = gazeboPose.pos.y;
+      point.z = gazeboPose.pos.z;
+
+      geometry_msgs::Quaternion rot;
+
+      rot.x = gazeboPose.rot.x;
+      rot.y = gazeboPose.rot.y;
+      rot.z = gazeboPose.rot.z;
+      rot.w = gazeboPose.rot.w;
+
+      out_rosPose->position = point;
+      out_rosPose->orientation = rot;
     }
     
     // Max force applied to wheel joint, to reach desired velocity. Define robot's linear acceleration.
@@ -142,7 +220,19 @@ namespace gazebo
     // Wheel turn velocities will be controllerd with desiredVelocity = (currentAngle - desiredAngle)*ControlGain
     static const double RearWheelControlGain    = 10.0;
 
-    static const double WheelRotationsPublishPeriod = 50;
+    static const double WheelRotationsPublishFreq = 50;
+
+    //
+    static const double LandmarkVisibilityPublishFreq = 10;
+
+    // The field of view to left and right of robot where the landmark can be seen
+    static const double LandmarkVisibilityFOV     = 1.047/2; // Same value is in model.sdf for camera
+
+    // The max distance when Landmark can be seen
+    static const double LandmarkVisibilityMaxDist = 50;
+
+    //
+    static const math::Pose LandmarksensorPoseInRobot;
 
     double    desiredFrontWheelVelocities[2];
     double    desiredRearWheelAngles[2];
@@ -159,10 +249,17 @@ namespace gazebo
     ros::Subscriber   rearWheelAnglesSubscriber;
     ros::Subscriber   frontWheelVelocitiesSubscriber;
 
-    ros::Publisher    wheelRotationsPublisher;
+    ros::Publisher    odometryPublisher;
+    ros::Publisher    landmarkMeasurementPublisher;
 
-    common::Time publishingPeriod;
-    common::Time lastPublishTime;
+    common::Time odomPublishingPeriod;
+    common::Time odomLastPublishTime;
+
+    common::Time landmPublishingPeriod;
+    common::Time landmLastPublishTime;
+
+    //
+    std::vector<physics::ModelPtr>  landmarks;
 
     private: physics::ModelPtr model;
     private: physics::WorldPtr world;
@@ -175,6 +272,9 @@ namespace gazebo
     // Why is this necessary?
     private: ros::CallbackQueue queue_;
   };
+
+  // Landmark detector (camera?) is on height 0.3m from robot model coordinate center
+  const math::Pose ROSModelPlugin::LandmarksensorPoseInRobot = math::Pose(math::Vector3(0, 0, 0.3), math::Quaternion(0, 0, 0));
 
   // Register this plugin with the simulator
   GZ_REGISTER_MODEL_PLUGIN(ROSModelPlugin)

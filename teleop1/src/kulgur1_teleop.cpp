@@ -7,7 +7,7 @@
 
 using namespace std;
 
-const double WheelRadius 		= 0.95;
+const double WheelRadius 		= 0.095;
 const double WheelBase 			= 0.2; 	// Distance of wheels from robot center axis
 const double WheelAxisDist 		= 0.48; // Distance between wheel axes
 const double TurnWheelJointBase = 0.2;	// 
@@ -113,8 +113,8 @@ int main(int argc, char **argv)
 	ros::init(argc, argv, "kulgur1_teleop");
 	ros::NodeHandle n;
 
-	ros::Publisher 	wheelVelocityPublisher = n.advertise<std_msgs::Float64MultiArray>("/gazebo/set_wheel_velocities", 50);
-	ros::Publisher 	turnWheelAnglesPublisher = n.advertise<std_msgs::Float64MultiArray>("/gazebo/set_rear_wheel_angles", 50);
+	ros::Publisher 	wheelVelocityPublisher = n.advertise<std_msgs::Float64MultiArray>("/gazebo/kulgur1/set_wheel_velocities", 50);
+	ros::Publisher 	turnWheelAnglesPublisher = n.advertise<std_msgs::Float64MultiArray>("/gazebo/kulgur1/set_rear_wheel_angles", 50);
 
 	double 	turnRadius 	= HUGE_VAL;
 	double 	driveVel 	= 0;

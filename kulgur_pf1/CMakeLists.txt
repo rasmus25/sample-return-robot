@@ -1,10 +1,11 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(kulgur1)
+project(kulgur_pf1)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED roscpp message_generation std_msgs geometry_msgs rosbag)
+find_package(catkin REQUIRED COMPONENTS roscpp)
+find_package( MRPT REQUIRED base gui slam)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -18,12 +19,11 @@ find_package(catkin REQUIRED roscpp message_generation std_msgs geometry_msgs ro
 #######################################
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-	FILES
-   	msg/LandmarkMeasurement.msg
-   	msg/LandmarkMeasurementArray.msg
-   	msg/LowOdometry.msg
-)
+# add_message_files(
+#   FILES
+#   Message1.msg
+#   Message2.msg
+# )
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -33,11 +33,10 @@ add_message_files(
 # )
 
 ## Generate added messages and services with any dependencies listed here
-generate_messages(
-  DEPENDENCIES
-  std_msgs
-  geometry_msgs
-)
+# generate_messages(
+#   DEPENDENCIES
+#   std_msgs  # Or other packages containing msgs
+# )
 
 ###################################################
 ## Declare things to be passed to other projects ##
@@ -47,9 +46,9 @@ generate_messages(
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES kulgur1_gazebo_plugin
-#  CATKIN_DEPENDS message_generation
+   INCLUDE_DIRS include
+#  LIBRARIES kulgur_pf1
+#  CATKIN_DEPENDS roscpp
 #  DEPENDS system_lib
 )
 
@@ -58,33 +57,27 @@ catkin_package(
 ###########
 
 ## Specify additional locations of header files
-include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
-# Need to add these here, because gazebo is not catkinized.
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo_msgs/srv_gen/cpp/include
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/physics/
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/common/
- )
-
-## Declare a cpp library
-add_library(kulgur1_plugin
-   src/kulgur1_wheel_turn_and_odometry.cpp
+include_directories(include
+  ${catkin_INCLUDE_DIRS}
+# Adding because Gazebo is not catkinized?
+  /opt/ros/groovy/stacks/simulator_gazebo/gazebo_msgs/msg_gen/cpp/include/
 )
 
-## Declare a cpp executable
-# add_executable(kulgur1_gazebo_plugin_node src/kulgur1_gazebo_plugin_node.cpp)
-add_executable(bag2text src/bag2text.cpp)
-
-## Add dependencies to the executable
-# add_dependencies(kulgur1_gazebo_plugin_node ${PROJECT_NAME})
-
-## Specify libraries to link a library or executable target against
-# target_link_libraries(kulgur1_gazebo_plugin_node
-#   ${catkin_LIBRARIES}
+## Declare a cpp library
+# add_library(kulgur_pf1
+#   src/${PROJECT_NAME}/kulgur_pf1.cpp
 # )
 
-target_link_libraries(bag2text ${catkin_LIBRARIES})
+## Declare a cpp executable
+add_executable(pf_predict src/pf_predict.cpp)
+
+## Add dependencies to the executable
+# add_dependencies(kulgur_pf1_node ${PROJECT_NAME})
+
+## Specify libraries to link a library or executable target against
+target_link_libraries(pf_predict
+   ${catkin_LIBRARIES} ${MRPT_LIBS}
+)
 
 #############
 ## Install ##
@@ -98,7 +91,7 @@ target_link_libraries(bag2text ${catkin_LIBRARIES})
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS kulgur1_gazebo_plugin kulgur1_gazebo_plugin_node
+# install(TARGETS kulgur_pf1 kulgur_pf1_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -123,7 +116,7 @@ target_link_libraries(bag2text ${catkin_LIBRARIES})
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_kulgur1_gazebo_plugin.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_kulgur_pf1.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
