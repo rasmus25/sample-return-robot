@@ -4,6 +4,7 @@
 #include "opencv2/photo/photo.hpp"
 #include <string>
 #include <sstream>
+#include <cmath>
 
 using namespace cv;
 using namespace std;
@@ -129,6 +130,15 @@ static void onMouse( int event, int x, int y, int, void* )
 			/// Normalize the result to [ 0, histImage.rows ]
 			normalize(hue_hist, hue_hist, 0, histImage.rows, NORM_MINMAX, -1, Mat() );
 
+
+
+			int prevalent_hue[2];
+			minMaxIdx( hue_hist, 0, 0, 0, prevalent_hue, Mat() );
+//			lower_threshold = std::max(prevalent_hue[0]-20, 0);
+//			upper_threshold = std::min(prevalent_hue[0]+20, 180);
+//			setTrackbarPos("Lower thresh", "maskwindow", std::max(prevalent_hue[0]-20, 0));
+//			setTrackbarPos("Upper thresh", "maskwindow", std::min(prevalent_hue[0]+20, 180));
+
 			Scalar color;
 			/// Draw for each channel
 			for( int i = 1; i < histSize; i++ )
@@ -142,7 +152,8 @@ static void onMouse( int event, int x, int y, int, void* )
 							   Point( bin_w*(i), hist_h - cvRound(hue_hist.at<float>(i)) ),
 							   color, 2, 8, 0  );
 			}
-
+			setTrackbarPos("Lower thresh", "maskwindow", std::max(prevalent_hue[0]-20, 0));
+			setTrackbarPos("Upper thresh", "maskwindow", std::min(prevalent_hue[0]+20, 180));
 			/// Display
 //			namedWindow("calcHist Demo", CV_WINDOW_AUTOSIZE );
 //			imshow("calcHist Demo", histImage );
