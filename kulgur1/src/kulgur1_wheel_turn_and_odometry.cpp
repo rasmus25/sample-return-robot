@@ -209,7 +209,7 @@ namespace gazebo
     }
     
     // Max force applied to wheel joint, to reach desired velocity. Define robot's linear acceleration.
-    static const double FrontWheelMaxForce      = 50.0;
+    static const double FrontWheelMaxForce      = 10.0;
 
     // Max force applied to rear wheel turning joints to reach desired turn path. Different axis than FrontWheelMaxForce!
     static const double RearWheelTurnMaxForce   = 50.0;

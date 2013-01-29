@@ -74,6 +74,7 @@ add_library(KulgurOdometry src/KulgurOdometry.cpp)
 
 ## Declare a cpp executable
 add_executable(pf_predict src/pf_predict.cpp)
+# add_executable(jacobianTest src/jacobianTest.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(kulgur_pf1_node ${PROJECT_NAME})
@@ -82,6 +83,10 @@ add_executable(pf_predict src/pf_predict.cpp)
 target_link_libraries(pf_predict
    ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
 )
+
+#target_link_libraries(jacobianTest
+ #  ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
+#)
 
 #############
 ## Install ##

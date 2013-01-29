@@ -73,6 +73,10 @@ double KulgurOdometry::bearingChange(const Eigen::Vector4d& wheelRotations, cons
 
 	if(fabs(avgWheelTurnAng) >= MinWheelTurnAngle)
 	{
+
+		// This did not give a better result.
+		// double avgWheelTurnRadius 	= WheelAxisDist / (tan(rearWheelAngles[0])/2 + tan(rearWheelAngles[1])/2) ;
+
 		double avgWheelTurnRadius 	= WheelAxisDist / tan(avgWheelTurnAng);
 
 		bearingChange 				= avgWheelDist / avgWheelTurnRadius;

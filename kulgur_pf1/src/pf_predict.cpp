@@ -25,7 +25,7 @@ using namespace kulgur1;
 //
 //
 
-const int ParticleCount = 1000;
+const int ParticleCount = 10;
 typedef Matrix<double, 3, ParticleCount>  Particles;
 
 void SetAllParticles(Particles* inout_particles, const Vector3d& state);
@@ -38,6 +38,8 @@ void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo);
 
 void AddNoise(Particles* inout_particles, const Matrix<double, 3, 2>& predictionJacobian, 
 	const Vector4d& wheelRotations, const Vector2d& turnWheelAngles);
+
+void PredictParticlesAddNoise(Particles* inout_particles, const Vector4d& wheelRotations, const Vector2d& turnWheelAngles);
 
 //
 //
@@ -53,6 +55,9 @@ CDisplayWindowPlots plots("Particles");
 geometry_msgs::Pose lastPose;
 bool 				inited;
 
+const bool  		showPaths = true;
+const bool 			AddNoise_Conf = true;
+
 default_random_engine generator;
 
 int main(int argc, char **argv)
@@ -66,7 +71,7 @@ int main(int argc, char **argv)
 
 	ros::Rate loopRate(10);
 
-	// plots.hold_on();
+	if(showPaths) plots.hold_on();
 
 	ros::spin();
 
@@ -86,8 +91,8 @@ int main(int argc, char **argv)
 void AddNoise(Particles* inout_particles, const Matrix<double, 3, 2>& predictionJacobian, 
 	const Vector4d& wheelRotations, const Vector2d& turnWheelAngles)
 {
-	double turnNoise 		= 0.001 * M_PI / 180;
-	double rotationsNoise 	= 0.001 * KulgurOdometry::WheelRadius * (wheelRotations[0] + wheelRotations[1]) / 2;
+	double turnNoise 		= 0.5 * M_PI / 180;
+	double rotationsNoise 	= 0.000 * KulgurOdometry::WheelRadius * (wheelRotations[0] + wheelRotations[1]) / 2;
 
 	Particles noiseMatrix;
 
@@ -96,7 +101,10 @@ void AddNoise(Particles* inout_particles, const Matrix<double, 3, 2>& prediction
 
 	for (int i = 0; i < noiseMatrix.cols() ; ++i)
 	{
-		noiseMatrix.col(i) = predictionJacobian * Vector2d(rotNoiseDist(generator), turnNoiseDist(generator));
+		Vector3d noiseVec 	= predictionJacobian * Vector2d(0, turnNoiseDist(generator));
+		noiseMatrix.col(i) 	= noiseVec;
+
+		cout<<noiseVec<<endl<<endl;
 	}
 
 	*inout_particles += noiseMatrix;
@@ -123,6 +131,43 @@ void PredictParticles(Particles* inout_particles, const Vector3d& poseChange)
 //
 //
 
+void PredictParticlesAddNoise(Particles* inout_particles, const Vector4d& wheelRotations, const Vector2d& turnWheelAngles)
+{
+	// TODO: refactor these constants
+	const double turnNoise 		= 3 * M_PI / 180;
+	const double rotationsNoise = 0.05 * KulgurOdometry::WheelRadius * (wheelRotations[0] + wheelRotations[1]) / 2;
+
+	//
+	Matrix<double, 3, 2> predictionJacobian = odometry.PredictJacobian(wheelRotations, turnWheelAngles);
+	normal_distribution<double> turnNoiseDist(0, turnNoise);
+	normal_distribution<double> rotNoiseDist(0, rotationsNoise);
+
+	Vector3d poseChange = odometry.PoseChange(wheelRotations, turnWheelAngles);
+
+	for (int i = 0; i < inout_particles->cols() ; ++i)
+	{
+		//
+		double currentAng = (*inout_particles)(2,i);
+		Vector3d noiseVec(0,0,0);
+
+		if(AddNoise_Conf)
+		{
+			noiseVec = predictionJacobian * Vector2d(rotNoiseDist(generator), turnNoiseDist(generator));
+
+			cout<<endl<<noiseVec<<endl;
+		}
+
+		Vector2d particlePosChange 		= Rotation2D<double>(currentAng) * (poseChange.block(0,0,2,1) + noiseVec.block(0,0,2,1));
+
+		inout_particles->block(0,i,2,1) += particlePosChange;
+		(*inout_particles)(2,i) 		+= poseChange[2] + noiseVec[2];
+	}	
+}
+
+//
+//
+//
+
 void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo)
 {
 	Vector4d wheelRotations(0, 0, 0, 0);
@@ -143,16 +188,14 @@ void NewOdometryInfoCallback(const LowOdometry::ConstPtr& odometryInfo)
 		return;
 	}
 
-	Vector3d poseChange = odometry.PoseChange(wheelRotations - prevWheelRotations, turnWheelAngles);
-	PredictParticles(&particles, poseChange);
-	AddNoise(&particles, odometry.PredictJacobian(wheelRotations, turnWheelAngles), wheelRotations, turnWheelAngles);
+	PredictParticlesAddNoise(&particles, wheelRotations - prevWheelRotations, turnWheelAngles);
 
 	DrawParticles(particles, plots);
 
 	//
-	plots.hold_on();
+	if(!showPaths) plots.hold_on();
 	plots.plot(vector<double>(1, lastPose.position.x), vector<double>(1, lastPose.position.y), "b.1");
-	plots.hold_off();
+	if(!showPaths) plots.hold_off();
 
 	prevWheelRotations = wheelRotations;
 }

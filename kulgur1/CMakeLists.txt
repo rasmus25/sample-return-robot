@@ -20,9 +20,9 @@ find_package(catkin REQUIRED roscpp message_generation std_msgs geometry_msgs ro
 ## Generate messages in the 'msg' folder
 add_message_files(
 	FILES
-   	msg/LandmarkMeasurement.msg
-   	msg/LandmarkMeasurementArray.msg
-   	msg/LowOdometry.msg
+   	LandmarkMeasurement.msg
+   	LandmarkMeasurementArray.msg
+   	LowOdometry.msg
 )
 
 ## Generate services in the 'srv' folder
