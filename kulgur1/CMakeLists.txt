@@ -57,14 +57,27 @@ catkin_package(
 ## Build ##
 ###########
 
+execute_process(
+OUTPUT_VARIABLE GAZEBO_DIR
+COMMAND rospack find gazebo
+)
+
+string(STRIP ${GAZEBO_DIR} GAZEBO_DIR)
+
+execute_process(
+OUTPUT_VARIABLE GAZEBO_MSGS_DIR
+COMMAND rospack find gazebo_msgs
+)
+
+string(STRIP ${GAZEBO_MSGS_DIR} GAZEBO_MSGS_DIR)
+
 ## Specify additional locations of header files
 include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
-# Need to add these here, because gazebo is not catkinized.
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo_msgs/srv_gen/cpp/include
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/physics/
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo/gazebo/include/gazebo-1.2/gazebo/common/
+  ${GAZEBO_MSGS_DIR}/gazebo_msgs/srv_gen/cpp/include
+  ${GAZEBO_DIR}/gazebo/include/gazebo-1.2/
+  ${GAZEBO_DIR}/gazebo/include/gazebo-1.2/gazebo/
+  ${GAZEBO_DIR}/gazebo/include/gazebo-1.2/gazebo/physics/
+  ${GAZEBO_DIR}/gazebo/include/gazebo-1.2/gazebo/common/
  )
 
 ## Declare a cpp library

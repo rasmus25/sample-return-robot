@@ -52,13 +52,13 @@ TEST(TestMeasurementLikelihood, DISABLED_testAssociation_ALOT)
 
 					AssociateMeasurement(measurement, particles, lms, cov, lambda, &outlier, &weights, &idxs);
 
-					if(outlier)
-					{
-						cout<<"Pose"<<endl<<pose<<endl<<endl;
-						cout<<"LmPlusNoise"<<endl<<lmPlusNoise<<endl<<endl;
-						cout<<"Measurement"<<endl<<measurement<<endl<<endl;
-						cout<<"Exact measurement"<<endl<<MeasurementPrediction(pose, lms[l])<<endl<<endl;
-					}
+					// if(outlier)
+					// {
+					// 	cout<<"Pose"<<endl<<pose<<endl<<endl;
+					// 	cout<<"LmPlusNoise"<<endl<<lmPlusNoise<<endl<<endl;
+					// 	cout<<"Measurement"<<endl<<measurement<<endl<<endl;
+					// 	cout<<"Exact measurement"<<endl<<MeasurementPrediction(pose, lms[l])<<endl<<endl;
+					// }
 
 					ASSERT_FALSE(outlier);
 					ASSERT_EQ(l, idxs[0]);
