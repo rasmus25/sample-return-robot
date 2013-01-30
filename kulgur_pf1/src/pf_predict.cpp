@@ -8,6 +8,7 @@
 #include <mrpt/gui.h>
 
 #include "KulgurOdometry.h"
+#include "Particles.h"
 
 #include "kulgur1/LandmarkMeasurementArray.h"
 #include "kulgur1/LowOdometry.h"
@@ -24,11 +25,6 @@ using namespace kulgur1;
 //
 //
 //
-
-const int ParticleCount = 10;
-typedef Matrix<double, 3, ParticleCount>  Particles;
-
-void SetAllParticles(Particles* inout_particles, const Vector3d& state);
 
 void PredictParticles(Particles* inout_particles, const Vector3d& poseChange);
 
@@ -213,10 +209,4 @@ void DrawParticles(const Particles& particles, CDisplayWindowPlots& plots)
 //
 //
 
-void SetAllParticles(Particles* inout_particles, const Vector3d& state)
-{
-	(*inout_particles) << 
-							MatrixXd::Constant(1, inout_particles->cols(), state[0]) , 
-							MatrixXd::Constant(1, inout_particles->cols(), state[1]) ,
-							MatrixXd::Constant(1, inout_particles->cols(), state[2]); 
-}
+

@@ -71,6 +71,8 @@ include_directories(include
 # )
 
 add_library(KulgurOdometry src/KulgurOdometry.cpp)
+add_library(ParticleWeight src/ParticleWeight.cpp)
+add_library(Particles src/Particles.cpp)
 
 ## Declare a cpp executable
 add_executable(pf_predict src/pf_predict.cpp)
@@ -81,7 +83,7 @@ add_executable(pf_predict src/pf_predict.cpp)
 
 ## Specify libraries to link a library or executable target against
 target_link_libraries(pf_predict
-   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
+   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry Particles
 )
 
 #target_link_libraries(jacobianTest
@@ -129,6 +131,12 @@ target_link_libraries(pf_predict
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
+
+catkin_add_gtest(ParticleWeight-test test/ParticleWeightTest.cpp)
+if(TARGET ParticleWeight-test)
+   target_link_libraries(ParticleWeight-test ParticleWeight Particles)
+endif()
+
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)
