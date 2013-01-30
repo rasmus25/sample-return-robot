@@ -209,27 +209,27 @@ namespace gazebo
     }
     
     // Max force applied to wheel joint, to reach desired velocity. Define robot's linear acceleration.
-    static const double FrontWheelMaxForce      = 10.0;
+    static const double FrontWheelMaxForce;
 
     // Max force applied to rear wheel turning joints to reach desired turn path. Different axis than FrontWheelMaxForce!
-    static const double RearWheelTurnMaxForce   = 50.0;
+    static const double RearWheelTurnMaxForce;
 
     // Max velocity that the rear wheel turning "servo" can achieve.
-    static const double RearWheelTurnMaxVelocity= 5.0;
+    static const double RearWheelTurnMaxVelocity;
 
     // Wheel turn velocities will be controllerd with desiredVelocity = (currentAngle - desiredAngle)*ControlGain
-    static const double RearWheelControlGain    = 10.0;
+    static const double RearWheelControlGain;
 
-    static const double WheelRotationsPublishFreq = 50;
+    static const double WheelRotationsPublishFreq;
 
     //
-    static const double LandmarkVisibilityPublishFreq = 10;
+    static const double LandmarkVisibilityPublishFreq;
 
     // The field of view to left and right of robot where the landmark can be seen
-    static const double LandmarkVisibilityFOV     = 1.047/2; // Same value is in model.sdf for camera
+    static const double LandmarkVisibilityFOV; // Same value is in model.sdf for camera
 
     // The max distance when Landmark can be seen
-    static const double LandmarkVisibilityMaxDist = 50;
+    static const double LandmarkVisibilityMaxDist;
 
     //
     static const math::Pose LandmarksensorPoseInRobot;
@@ -275,6 +275,29 @@ namespace gazebo
 
   // Landmark detector (camera?) is on height 0.3m from robot model coordinate center
   const math::Pose ROSModelPlugin::LandmarksensorPoseInRobot = math::Pose(math::Vector3(0, 0, 0.3), math::Quaternion(0, 0, 0));
+
+    // Max force applied to wheel joint, to reach desired velocity. Define robot's linear acceleration.
+    const double ROSModelPluginFrontWheelMaxForce      = 10.0;
+
+    // Max force applied to rear wheel turning joints to reach desired turn path. Different axis than FrontWheelMaxForce!
+    const double ROSModelPluginRearWheelTurnMaxForce   = 50.0;
+
+    // Max velocity that the rear wheel turning "servo" can achieve.
+    const double ROSModelPluginRearWheelTurnMaxVelocity= 5.0;
+
+    // Wheel turn velocities will be controllerd with desiredVelocity = (currentAngle - desiredAngle)*ControlGain
+    const double ROSModelPluginRearWheelControlGain    = 10.0;
+
+    const double ROSModelPluginWheelRotationsPublishFreq = 50;
+
+    //
+    const double ROSModelPluginLandmarkVisibilityPublishFreq = 10;
+
+    // The field of view to left and right of robot where the landmark can be seen
+    const double ROSModelPluginLandmarkVisibilityFOV     = 1.047/2; // Same value is in model.sdf for camera
+
+    // The max distance when Landmark can be seen
+    const double ROSModelPluginLandmarkVisibilityMaxDist = 50;
 
   // Register this plugin with the simulator
   GZ_REGISTER_MODEL_PLUGIN(ROSModelPlugin)

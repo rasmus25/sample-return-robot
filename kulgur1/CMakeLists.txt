@@ -57,6 +57,9 @@ catkin_package(
 ## Build ##
 ###########
 
+# ADD_DEFINITIONS("-std=gnu++0x")
+# set(CMAKE_CXX_FLAGS "-std=c++0x")
+
 execute_process(
 OUTPUT_VARIABLE GAZEBO_DIR
 COMMAND rospack find gazebo
