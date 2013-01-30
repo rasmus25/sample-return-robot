@@ -10,7 +10,7 @@ Eigen::Vector2d MeasurementPrediction(const Eigen::Vector3d& pose, const Eigen::
 double MeasurementLikelihood(const Eigen::Vector2d& measurement, const Eigen::Vector3d& pose,
 	const Eigen::Vector2d& landmark, const Eigen::Matrix2d& measurementCov);
 
-typedef std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d>> LandmarksVector;
+typedef std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > LandmarksVector;
 
 //
 // measurement - [bearing; distance]
