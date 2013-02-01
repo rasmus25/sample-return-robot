@@ -56,7 +56,7 @@ namespace gazebo
 
       this->odometryPublisher = this->node->advertise<LowOdometry>("kulgur1/odometry", 50);
 
-      this->landmarkMeasurementPublisher = this->node->advertise<LandmarkMeasurementArray>("kulgur1/visible_landmarks", 50);
+      this->landmarkMeasurementPublisher = this->node->advertise<LandmarkMeasurementArray>("kulgur1/visible_landmarks", 2);
 
       // Listen to the update event. This event is broadcast every
       // simulation iteration.
@@ -161,13 +161,17 @@ namespace gazebo
       LandmarkMeasurement measurement;
 
       // Pole coordinates are defined at the middle. Currently height 10.
-      measurement.distance  = (landmarkFromSensor.pos - math::Vector3(0, 0, 10)).GetLength();
+      measurement.distance  = math::Vector2d(landmarkPose.pos.x, landmarkPose.pos.y).Distance(
+        math::Vector2d(sensorPoseInWorld.pos.x, sensorPoseInWorld.pos.y));
 
       // Assuming no other rotation besides around z-axis
-      measurement.bearing   = GZ_NORMALIZE(atan2(landmarkFromSensor.pos[1], landmarkFromSensor.pos[0]));
+      // measurement.bearing   = GZ_NORMALIZE(atan2(landmarkFromSensor.pos[1], landmarkFromSensor.pos[0]));
+      measurement.bearing = GZ_NORMALIZE(
+        atan2(landmarkPose.pos.y - sensorPoseInWorld.pos.y, landmarkPose.pos.x 
+                - sensorPoseInWorld.pos.x) - 2.0*acos(sensorPoseInWorld.rot.w));
 
       // Assuming the landmark is straight.
-      measurement.angle     = 0;
+      measurement.angle    = 0;
 
       return measurement;
     }
@@ -288,7 +292,7 @@ namespace gazebo
     // Wheel turn velocities will be controllerd with desiredVelocity = (currentAngle - desiredAngle)*ControlGain
     const double ROSModelPlugin::RearWheelControlGain    = 10.0;
 
-    const double ROSModelPlugin::WheelRotationsPublishFreq = 50;
+    const double ROSModelPlugin::WheelRotationsPublishFreq = 10;
 
     //
     const double ROSModelPlugin::LandmarkVisibilityPublishFreq = 10;

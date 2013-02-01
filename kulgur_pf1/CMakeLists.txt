@@ -71,21 +71,29 @@ include_directories(include
 #   src/${PROJECT_NAME}/kulgur_pf1.cpp
 # )
 
+add_library(PredictParticles src/PredictParticles.cpp)
 add_library(KulgurOdometry src/KulgurOdometry.cpp)
 add_library(ParticleWeight src/ParticleWeight.cpp)
 add_library(Particles src/Particles.cpp)
+add_library(SamplerLowVariance src/SamplerLowVariance.cpp)
 
 ## Declare a cpp executable
 add_executable(pf_predict src/pf_predict.cpp)
-# add_executable(jacobianTest src/jacobianTest.cpp)
+add_executable(PF1 src/PF1.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(kulgur_pf1_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(pf_predict
-   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry Particles
+target_link_libraries(PredictParticles
+   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
 )
+
+target_link_libraries(pf_predict
+   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry Particles PredictParticles
+)
+target_link_libraries(PF1
+	${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry Particles PredictParticles ParticleWeight SamplerLowVariance)
 
 #target_link_libraries(jacobianTest
  #  ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
@@ -136,6 +144,16 @@ target_link_libraries(pf_predict
 catkin_add_gtest(ParticleWeight-test test/ParticleWeightTest.cpp)
 if(TARGET ParticleWeight-test)
    target_link_libraries(ParticleWeight-test ParticleWeight Particles)
+endif()
+
+catkin_add_gtest(ParticleWeight2-test test/ParticleWeightTest2.cpp)
+if(TARGET ParticleWeight2-test)
+   target_link_libraries(ParticleWeight2-test ParticleWeight Particles)
+endif()
+
+catkin_add_gtest(SamplerLowVariance-test test/SamplerLowVarianceTest.cpp)
+if(TARGET SamplerLowVariance-test)
+   target_link_libraries(SamplerLowVariance-test SamplerLowVariance)
 endif()
 
 

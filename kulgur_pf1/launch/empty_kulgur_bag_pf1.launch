@@ -1,0 +1,16 @@
+<launch>
+
+  <param name="/use_sim_time" value="true" />
+
+  <node name="gazebo" pkg="gazebo" type="gazebo" args="$(find heightmap)/worlds/empty_with_kulgur.world" respawn="false" output="screen">
+  	<env name="GAZEBO_RESOURCE_PATH" value="$(find gazebo)/gazebo/share/gazebo-1.2/media/"/>
+  </node>
+
+  <node pkg="kulgur_pf1" type="PF1" name="PF1"/>
+
+  <node name="gazebo_gui" pkg="gazebo" type="gui" respawn="false" output="screen"/>
+
+   <node pkg="rosbag" type="record" name="rosbag"
+       args="record -O /home/ronald/bag/latest.bag /gazebo/kulgur1/odometry /gazebo/kulgur1/visible_landmarks"/>
+
+</launch>

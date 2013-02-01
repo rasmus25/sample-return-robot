@@ -1,3 +1,5 @@
+#pragma once
+
 #include "kulgur1/LandmarkMeasurementArray.h"
 
 #include "Particles.h"
@@ -27,5 +29,14 @@ void AssociateMeasurement(const Eigen::Vector2d& measurement, const Particles& p
 	const LandmarksVector& landmarks, const Eigen::Matrix2d& measurementCov, double lambda, 
 	bool* out_outlier, std::vector<double>* out_weights, std::vector<int>* out_lmIdxs = NULL);
 
+//
+typedef std::vector<Eigen::Vector2d, Eigen::aligned_allocator<Eigen::Vector2d> > MeasurementsVector;
+
+//
+//
+//
+void ParticleWeights(const MeasurementsVector& measurements, const Particles& particles, 
+						const LandmarksVector& landmarks, const Eigen::Matrix2d& measurementCov, double lambda, 
+						std::vector<double>* out_weights, std::vector<bool>* out_outliers = NULL);
 
 const Eigen::Vector2d toVector2d(const kulgur1::LandmarkMeasurement& measurement);

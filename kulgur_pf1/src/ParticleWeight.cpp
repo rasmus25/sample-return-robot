@@ -6,6 +6,59 @@ using namespace Eigen;
 using namespace kulgur1;
 using namespace std;
 
+void ParticleWeights(const MeasurementsVector& measurements, const Particles& particles, 
+						const LandmarksVector& landmarks, const Eigen::Matrix2d& measurementCov, double lambda, 
+						std::vector<double>* out_weights, std::vector<bool>* out_outliers)
+{
+	vector<vector<double> > weights(measurements.size());
+	vector<bool> 			outliers(measurements.size());
+
+	for(int m = 0 ; m < measurements.size() ; m++)
+	{
+		bool outlier;
+
+		AssociateMeasurement(measurements[m], particles, landmarks, measurementCov, lambda,
+			&outlier, &(weights[m]));
+
+		outliers[m] = outlier;
+	}
+
+	out_weights->resize(particles.cols());
+
+	bool allOutliers = true;
+	for(auto it = outliers.begin() ; it != outliers.end() ; it++)
+	{
+		if(!*it) 
+		{
+			allOutliers = false;
+			break;
+		}
+	}
+
+	double weightsSum = 0;
+
+	for(int p = 0 ; p < particles.cols() ; p++)
+	{
+		(*out_weights)[p] = 1;
+
+		if(!allOutliers)
+		{
+			for(int m = 0 ; m < weights.size() ; m++)
+			{
+				if(outliers[m]) continue;			
+				(*out_weights)[p] *= weights[m][p];
+			}
+		}
+
+		weightsSum += (*out_weights)[p];
+	}
+
+	// Normalise weights so sum will equal 1.
+	for(auto it = out_weights->begin() ; it != out_weights->end() ; it++ ) *it /= weightsSum;
+
+	if(out_outliers != NULL) *out_outliers = outliers;
+}
+
 void AssociateMeasurement(const Eigen::Vector2d& measurement, const Particles& particles, 
 	const LandmarksVector& landmarks, const Eigen::Matrix2d& measurementCov, double lambda, 
 	bool* out_outlier, vector<double>* out_weights, std::vector<int>* out_lmIdxs)
@@ -43,6 +96,8 @@ void AssociateMeasurement(const Eigen::Vector2d& measurement, const Particles& p
 
 	if (landmarkLhSum < lambda)
 	{
+		cout<<endl<<landmarkLhSum<<endl;
+		assert(false);
 		*out_outlier = true;
 	}
 	else
@@ -73,10 +128,17 @@ double MeasurementLikelihood(const Eigen::Vector2d& measurement, const Eigen::Ve
 
 	mrpt::math::wrapToPiInPlace(nu[0]);
 
+	// cout<<endl<<"D"<<endl<<measurementCov<<endl<<endl;
+	// cout<<endl<<"nu"<<endl<<nu<<endl<<endl;
+
 	// See for example Thrun's book. p 217. line 16.
 	double D 			= nu.transpose() * measurementCov.inverse() * nu;
 	double w_unscaled 	= exp( -0.5 * D );
 	double w_scaled 	= w_unscaled / ( 2 * M_PI * sqrt( measurementCov.det() ) );
+
+	// cout<<endl<<"w_scaled "<<w_scaled<<endl<<endl;
+
+	assert(0 <= w_scaled);
 
 	return w_scaled;
 }

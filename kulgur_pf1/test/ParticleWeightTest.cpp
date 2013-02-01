@@ -8,6 +8,79 @@ using namespace Eigen;
 using namespace kulgur1;
 using namespace std;
 
+TEST(TestMeasurementLikelihood, DISABLED_testDiffParticleAssoc)
+{
+	//
+	// Two different particles see the same landmark the same way.
+	// Weights and associations should be the same
+	// 
+	Particles particles;
+
+	Matrix2d cov;
+	cov << 	0.1, 0,
+			0, 1.0;
+
+	double lambda = 0.0001;	
+
+	LandmarksVector lms;
+	lms.push_back(Vector2d(3, 1));
+	lms.push_back(Vector2d(2, 2));		// This is the observed lm
+	lms.push_back(Vector2d(0, -1));
+
+	Vector3d pose1(1, 1, M_PI/4);
+	Vector3d pose2(3, 3, 3*M_PI/4);
+
+	particles.col(2) = pose1;
+	particles.col(5) = pose2;
+
+	Vector2d m1 = MeasurementPrediction(pose1, lms[1] + Vector2d(0.1, 0.1));
+	Vector2d m2 = MeasurementPrediction(pose2, lms[1] + Vector2d(0.1, 0.1));
+
+	bool outlier1, outlier2;
+	vector<double> weights1, weights2;
+	vector<int> idxs1, idxs2;
+
+	AssociateMeasurement(m1, particles, lms, cov, lambda, &outlier1, &weights1, &idxs1);
+	AssociateMeasurement(m2, particles, lms, cov, lambda, &outlier2, &weights2, &idxs2);
+
+	ASSERT_EQ(idxs1[2], 1);
+	ASSERT_EQ(idxs1[2], idxs2[5]);
+	ASSERT_NEAR(weights1[2], weights2[5], 1e-6);
+
+	//
+	// Two different particles see two different landmarks the same way.
+	// Weights should be the same, false association weights should be smalled, associations should be correct
+	//
+	Vector3d pose0(1.2, 1.2, 0.9 * M_PI);
+
+	pose1 = Vector3d(1, 1, M_PI);
+	pose2 = Vector3d(-1, -1, -M_PI/2);
+
+	particles.col(0) = pose0;
+	particles.col(1) = pose1;
+	particles.col(2) = pose2;
+
+	lms[1] = Vector2d(0, 1);
+	lms[2] = Vector2d(-1, -2);
+
+	m1 = Vector2d(0, 0.99);
+	m2 = Vector2d(0, 1.02);
+
+	AssociateMeasurement(m1, particles, lms, cov, lambda, &outlier1, &weights1, &idxs1);
+	AssociateMeasurement(m2, particles, lms, cov, lambda, &outlier2, &weights2, &idxs2);
+
+	// Check correct associations
+	ASSERT_EQ(idxs1[1], 1);
+	ASSERT_EQ(idxs2[2], 2);
+
+	// Check that weights are similar
+	ASSERT_NEAR(weights1[1], weights2[2], 1e-3);
+
+	// Check that other particles don't get better weights
+	ASSERT_TRUE(weights1[1] > weights1[0]);
+	ASSERT_TRUE(weights2[2] > weights2[0]);
+}
+
 TEST(TestMeasurementLikelihood, DISABLED_testAssociation_ALOT)
 {
 	Particles 	particles;
