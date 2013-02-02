@@ -74,6 +74,8 @@
   </light>
     <model name="topomap">
       <static>true</static>
+      <!-- X-axis is east -->
+      <pose>0 0 -1.8 0 0 3.14</pose>
       <link name="link">
         <collision name="collision">
           <geometry>
@@ -96,7 +98,7 @@
 
     <include>
         <uri>file://models/robot1</uri>
-	<pose>0 0 2.5 0 0 0</pose>
+	<pose>0 0 0.2 0 0 0</pose>
     </include>
 
     <!-- hockey puck -->
