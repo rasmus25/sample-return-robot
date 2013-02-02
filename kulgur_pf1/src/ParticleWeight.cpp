@@ -3,7 +3,7 @@
 #include <cmath>
 
 using namespace Eigen;
-using namespace kulgur1;
+using namespace kulgur_msgs;
 using namespace std;
 
 void ParticleWeights(const MeasurementsVector& measurements, const Particles& particles, 
@@ -141,10 +141,4 @@ double MeasurementLikelihood(const Eigen::Vector2d& measurement, const Eigen::Ve
 	assert(0 <= w_scaled);
 
 	return w_scaled;
-}
-
-// Just converts to vector [bearing, distance], not from polar to euclidean vec
-const Eigen::Vector2d toVector2d(const kulgur1::LandmarkMeasurement& measurement)
-{
-	return Vector2d(measurement.bearing, measurement.distance);
 }

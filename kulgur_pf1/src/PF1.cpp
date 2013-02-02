@@ -10,8 +10,8 @@
 #include "ParticleWeight.h"
 #include "SamplerLowVariance.h"
 
-#include "kulgur1/LandmarkMeasurementArray.h"
-#include "kulgur1/LowOdometry.h"
+#include "kulgur_msgs/LandmarkMeasurementArray.h"
+#include "kulgur_msgs/LowOdometry.h"
  
 using namespace mrpt;          // Global methods, and data types.
 using namespace mrpt::utils;   // Select namespace for serialization, utilities, etc...
@@ -20,7 +20,7 @@ using namespace mrpt::gui;
 using namespace Eigen;
 using namespace std;
 
-using namespace kulgur1;
+using namespace kulgur_msgs;
 
 //
 // New message callbacks

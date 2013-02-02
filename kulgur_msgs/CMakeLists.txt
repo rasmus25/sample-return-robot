@@ -1,11 +1,10 @@
 cmake_minimum_required(VERSION 2.8.3)
-project(kulgur_pf1)
+project(kulgur_msgs)
 
 ## Find catkin macros and libraries
 ## if COMPONENTS list like find_package(catkin REQUIRED COMPONENTS xyz)
 ## is used, also find other catkin packages
-find_package(catkin REQUIRED COMPONENTS roscpp)
-find_package( MRPT REQUIRED base gui slam)
+find_package(catkin REQUIRED COMPONENTS geometry_msgs message_generation message_runtime roscpp std_msgs)
 
 ## System dependencies are found with CMake's conventions
 # find_package(Boost REQUIRED COMPONENTS system)
@@ -19,11 +18,12 @@ find_package( MRPT REQUIRED base gui slam)
 #######################################
 
 ## Generate messages in the 'msg' folder
-# add_message_files(
-#   FILES
-#   Message1.msg
-#   Message2.msg
-# )
+add_message_files(
+	FILES
+   	LandmarkMeasurement.msg
+   	LandmarkMeasurementArray.msg
+   	LowOdometry.msg
+)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -33,10 +33,10 @@ find_package( MRPT REQUIRED base gui slam)
 # )
 
 ## Generate added messages and services with any dependencies listed here
-# generate_messages(
-#   DEPENDENCIES
-#   std_msgs  # Or other packages containing msgs
-# )
+generate_messages(
+   DEPENDENCIES
+   geometry_msgs std_msgs
+ )
 
 ###################################################
 ## Declare things to be passed to other projects ##
@@ -46,9 +46,9 @@ find_package( MRPT REQUIRED base gui slam)
 ## CATKIN_DEPENDS: catkin_packages dependent projects also need
 ## DEPENDS: system dependencies of this project that dependent projects also need
 catkin_package(
-#  INCLUDE_DIRS include
-#  LIBRARIES kulgur_pf1
-#  CATKIN_DEPENDS roscpp
+   INCLUDE_DIRS include
+#  LIBRARIES kulgur_msgs
+   CATKIN_DEPENDS message_generation
 #  DEPENDS system_lib
 )
 
@@ -56,48 +56,26 @@ catkin_package(
 ## Build ##
 ###########
 
-#set(CMAKE_CXX_FLAGS "-std=c++0x")
-ADD_DEFINITIONS("-std=gnu++0x")
-
 ## Specify additional locations of header files
 include_directories(include
   ${catkin_INCLUDE_DIRS}
-# Adding because Gazebo is not catkinized?
-  /opt/ros/groovy/stacks/simulator_gazebo/gazebo_msgs/msg_gen/cpp/include/
 )
 
 ## Declare a cpp library
-# add_library(kulgur_pf1
-#   src/${PROJECT_NAME}/kulgur_pf1.cpp
+# add_library(kulgur_msgs
+#   src/${PROJECT_NAME}/kulgur_msgs.cpp
 # )
 
-add_library(PredictParticles src/PredictParticles.cpp)
-add_library(KulgurOdometry src/KulgurOdometry.cpp)
-add_library(ParticleWeight src/ParticleWeight.cpp)
-add_library(Particles src/Particles.cpp)
-add_library(SamplerLowVariance src/SamplerLowVariance.cpp)
-
 ## Declare a cpp executable
-add_executable(pf_predict src/pf_predict.cpp)
-add_executable(PF1 src/PF1.cpp)
+# add_executable(kulgur_msgs_node src/kulgur_msgs_node.cpp)
 
 ## Add dependencies to the executable
-# add_dependencies(kulgur_pf1_node ${PROJECT_NAME})
+# add_dependencies(kulgur_msgs_node ${PROJECT_NAME})
 
 ## Specify libraries to link a library or executable target against
-target_link_libraries(PredictParticles
-   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
-)
-
-target_link_libraries(pf_predict
-   ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry Particles PredictParticles
-)
-target_link_libraries(PF1
-	${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry Particles PredictParticles ParticleWeight SamplerLowVariance)
-
-#target_link_libraries(jacobianTest
- #  ${catkin_LIBRARIES} ${MRPT_LIBS} KulgurOdometry
-#)
+# target_link_libraries(kulgur_msgs_node
+#   ${catkin_LIBRARIES}
+# )
 
 #############
 ## Install ##
@@ -111,7 +89,7 @@ target_link_libraries(PF1
 # )
 
 ## Mark executables and/or libraries for installation
-# install(TARGETS kulgur_pf1 kulgur_pf1_node
+# install(TARGETS kulgur_msgs kulgur_msgs_node
 #   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
 #   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
@@ -136,26 +114,10 @@ target_link_libraries(PF1
 #############
 
 ## Add gtest based cpp test target and link libraries
-# catkin_add_gtest(${PROJECT_NAME}-test test/test_kulgur_pf1.cpp)
+# catkin_add_gtest(${PROJECT_NAME}-test test/test_kulgur_msgs.cpp)
 # if(TARGET ${PROJECT_NAME}-test)
 #   target_link_libraries(${PROJECT_NAME}-test ${PROJECT_NAME})
 # endif()
-
-catkin_add_gtest(ParticleWeight-test test/ParticleWeightTest.cpp)
-if(TARGET ParticleWeight-test)
-   target_link_libraries(ParticleWeight-test ParticleWeight Particles)
-endif()
-
-catkin_add_gtest(ParticleWeight2-test test/ParticleWeightTest2.cpp)
-if(TARGET ParticleWeight2-test)
-   target_link_libraries(ParticleWeight2-test ParticleWeight Particles)
-endif()
-
-catkin_add_gtest(SamplerLowVariance-test test/SamplerLowVarianceTest.cpp)
-if(TARGET SamplerLowVariance-test)
-   target_link_libraries(SamplerLowVariance-test SamplerLowVariance)
-endif()
-
 
 ## Add folders to be run by python nosetests
 # catkin_add_nosetests(test)

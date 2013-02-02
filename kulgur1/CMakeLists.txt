@@ -18,12 +18,12 @@ find_package(catkin REQUIRED roscpp message_generation std_msgs geometry_msgs ro
 #######################################
 
 ## Generate messages in the 'msg' folder
-add_message_files(
-	FILES
-   	LandmarkMeasurement.msg
-   	LandmarkMeasurementArray.msg
-   	LowOdometry.msg
-)
+#add_message_files(
+#	FILES
+#   	LandmarkMeasurement.msg
+#   	LandmarkMeasurementArray.msg
+#   	LowOdometry.msg
+#)
 
 ## Generate services in the 'srv' folder
 # add_service_files(
@@ -84,13 +84,13 @@ include_directories(include ${catkin_INCLUDE_DIRS} ${Boost_INCLUDE_DIRS}
  )
 
 ## Declare a cpp library
-add_library(kulgur1_plugin
-   src/kulgur1_wheel_turn_and_odometry.cpp
-)
+#add_library(kulgur1_plugin src/kulgur1_wheel_turn_and_odometry.cpp)
+
+add_library(KulgurPlugin src/KulgurPlugin.cpp)
 
 ## Declare a cpp executable
 # add_executable(kulgur1_gazebo_plugin_node src/kulgur1_gazebo_plugin_node.cpp)
-add_executable(bag2text src/bag2text.cpp)
+# add_executable(bag2text src/bag2text.cpp)
 
 ## Add dependencies to the executable
 # add_dependencies(kulgur1_gazebo_plugin_node ${PROJECT_NAME})
@@ -100,7 +100,7 @@ add_executable(bag2text src/bag2text.cpp)
 #   ${catkin_LIBRARIES}
 # )
 
-target_link_libraries(bag2text ${catkin_LIBRARIES})
+# target_link_libraries(bag2text ${catkin_LIBRARIES})
 
 #############
 ## Install ##

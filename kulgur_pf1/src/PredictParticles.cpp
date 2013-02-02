@@ -17,7 +17,7 @@ void AddNoise(Particles* inout_particles, const Matrix<double, 3, 2>& prediction
 	const Vector4d& wheelRotations, const Vector2d& turnWheelAngles)
 {
 	// TODO: refactor these constants
-	double turnNoise 		= 2.0 * M_PI / 180;
+	double turnNoise 		= 1.0 * M_PI / 180;
 	double rotationsNoise 	= 0.1 * KulgurOdometry::WheelRadius * (wheelRotations[0] + wheelRotations[1]) / 2;
 
 	Particles noiseMatrix;

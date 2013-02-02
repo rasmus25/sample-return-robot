@@ -247,7 +247,7 @@
     </axis2>
   </joint>
 
-  <plugin name="plugin" filename="libkulgur1_plugin.so"/>
+  <plugin name="plugin" filename="libKulgurPlugin.so"/>
 
   </model>
 </gazebo>
