@@ -58,8 +58,13 @@ void KulgurPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	rearWheelJoints[1]->SetMaxForce(0, RearWheelTurnMaxForce);
 
 	//
-	landmarks.push_back(this->world->GetModel("pole1"));
-	landmarks.push_back(this->world->GetModel("pole2"));
+	// landmarks.push_back(this->world->GetModel("pole1"));
+	// landmarks.push_back(this->world->GetModel("pole2"));
+
+	landmarks.push_back(this->world->GetModel("pole600"));
+	landmarks.push_back(this->world->GetModel("pole601"));
+	landmarks.push_back(this->world->GetModel("pole602"));
+	landmarks.push_back(this->world->GetModel("pole603"));
 }
 
 void KulgurPlugin::OnUpdate()

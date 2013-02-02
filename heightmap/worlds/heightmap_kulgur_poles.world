@@ -1,0 +1,185 @@
+<?xml version="1.0"?>
+<gazebo version="1.2">
+  <world name="default">
+  <!--
+    <include>
+      <uri>model://sun</uri>
+    </include>
+  -->
+  <!-- Light Sources -->
+    <light type="directional" name="sun1">
+      <cast_shadows>true</cast_shadows>
+
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+
+      <direction>-0.5 0.5 -1.0</direction>
+    </light>
+
+    <light type="directional" name="sun2">
+      <cast_shadows>true</cast_shadows>
+
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+
+      <direction>-0.5 0.5 -1.0</direction>
+    </light>
+  
+    <light type="directional" name="sun3">
+      <cast_shadows>true</cast_shadows>
+
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+
+      <direction>-0.5 0.5 -1.0</direction>
+    </light>
+
+    <light type="directional" name="sun4">
+      <cast_shadows>true</cast_shadows>
+
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.8 0.8 0.8 1</diffuse>
+      <specular>0.1 0.1 0.1 1</specular>
+
+      <attenuation>
+        <range>1000</range>
+        <constant>0.9</constant>
+        <linear>0.01</linear>
+        <quadratic>0.001</quadratic>
+      </attenuation>
+
+      <direction>-0.5 0.5 -1.0</direction>
+    </light>
+
+    <model name="topomap">
+      <static>true</static>
+      <!-- X-axis is east -->
+      <pose>0 0 -1.8 0 0 0.15394</pose>
+      <link name="link">
+        <collision name="collision">
+          <geometry>
+            <mesh>
+              <uri>file://models/land/tex_grass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </collision>
+        <visual name="visual">
+          <geometry>
+            <mesh>
+              <uri>file://models/land/tex_grass.dae</uri>
+              <scale>1 1 1</scale>
+            </mesh>
+          </geometry>
+        </visual>
+      </link>
+
+      <link name="water">
+        <visual name="water">
+          <pose>20 -40 1.2 0 0 0</pose>
+          <geometry>
+            <box>
+              <size>100 70 0.1</size>
+            </box>
+          </geometry>
+          <material>
+            <script>
+              <uri>file://media/materials/scripts/gazebo.material</uri>
+              <name>Gazebo/Blue</name>
+            </script>
+          </material>
+        </visual>
+      </link>
+    </model>
+
+    <!-- hockey puck -->
+    <model name="hockey_puck">
+      <pose>-8.0 -2.0 2.5 0 0 0</pose>
+      <link name="puck_body">
+      <pose>0 0 0 0 0 0</pose>
+      <inertial>
+        <mass>0.16</mass>
+      </inertial>
+
+      <collision name="puck_collision">
+        <geometry>
+          <cylinder>
+            <radius>.0762</radius>
+            <length>.0254</length>
+          </cylinder>
+        </geometry>
+      </collision>
+
+      <visual name="puck_visual">
+          <material>
+            <ambient>0.8 0 0 0</ambient>
+            <diffuse>0.6 0 0 0</diffuse>
+            <specular>0.1 0 0 0</specular>
+          </material>
+          <geometry>
+            <cylinder>
+              <radius>.0762</radius>
+              <length>.0254</length>
+            </cylinder>
+          </geometry>
+        </visual>
+      </link>
+    </model>
+
+
+    <include>
+      <uri>file://models/kulgur1</uri>
+      <!-- <pose>0 0 0.5 0 0 0</pose>  -->
+      <pose>86.58 6.44 1.0 0 0 3.14</pose>
+    </include>
+
+    <include>
+      <uri>file://models/landmark_pole</uri>
+      <pose> 125.65 -20.03 0 0 0 0</pose>
+      <name>pole600</name>
+    </include>
+
+    <include>
+      <uri>file://models/landmark_pole</uri>
+      <pose>141.17 -0.63 0 0 0 0</pose>
+      <name>pole601</name>
+    </include>
+
+    <include>
+      <uri>file://models/landmark_pole</uri>
+      <pose>161.87 12.40 0 0 0 0</pose>
+      <name>pole602</name>
+    </include>
+
+    <include>
+      <uri>file://models/landmark_pole</uri>
+      <pose>112.29 5.23 0 0 0 0</pose>
+      <name>pole603</name>
+    </include>
+
+  </world>
+</gazebo>
