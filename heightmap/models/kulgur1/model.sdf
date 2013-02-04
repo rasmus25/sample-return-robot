@@ -248,6 +248,7 @@
   </joint>
 
   <plugin name="plugin" filename="libKulgurPlugin.so"/>
+  <plugin name="simulate_arduino_sensors" filename="libgazebo_simulate_arduino_sensors.so"/>
 
   </model>
 </gazebo>

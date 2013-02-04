@@ -174,6 +174,7 @@
 
  
   <plugin name="diffdrive_control_plugin" filename="libdiffdrive_control_plugin.so"/>
+  <plugin name="simulate_arduino_sensors" filename="libgazebo_simulate_arduino_sensors.so"/>
 
   </model>
 </gazebo>
