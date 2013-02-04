@@ -51,6 +51,9 @@ void KulgurPlugin::Load(physics::ModelPtr _parent, sdf::ElementPtr /*_sdf*/)
 	desiredFrontWheelVelocities[0] = 0;
 	desiredFrontWheelVelocities[1] = 0;
 
+	desiredRearWheelAngles[0] = 0;
+	desiredRearWheelAngles[1] = 0;
+
 	rearWheelJoints[0] = this->model->GetJoint("rear_left_wheel_hinge");
 	rearWheelJoints[1] = this->model->GetJoint("rear_right_wheel_hinge");
 
@@ -76,7 +79,7 @@ void KulgurPlugin::OnUpdate()
 	//
 	frontWheelJoints[0]->SetVelocity(0, desiredFrontWheelVelocities[0]);
 	frontWheelJoints[1]->SetVelocity(0, desiredFrontWheelVelocities[1]);
-	
+
 	//
 	// Turn rear wheels
 	//
