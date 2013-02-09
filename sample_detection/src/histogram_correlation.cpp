@@ -33,6 +33,7 @@ int main(int argc, char** argv)
        return -1;
 
    namedWindow( "window", CV_WINDOW_NORMAL );
+   namedWindow( "histogram", CV_WINDOW_NORMAL );
    setMouseCallback( "window", onMouse, 0 );
 
    imshow( "window", img );
@@ -87,6 +88,8 @@ double similarity()
 
 	calcHist( &area2, 1, channels, Mat(), hist_area2, 2, histSize, ranges, true, false );
 	normalize( hist_area2, hist_area2, 0, 1, NORM_MINMAX, -1, Mat() );
+
+	imshow("histogram", hist_area2);
 
 	double correlation = compareHist( hist_area1, hist_area2, CV_COMP_CORREL );
 

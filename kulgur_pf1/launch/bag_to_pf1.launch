@@ -1,4 +1,0 @@
-<launch>
-	<node pkg="kulgur_pf1" type="PF1" name="PF1"/>
-   	<node pkg="rosbag" type="play" name="rosbag" args="/home/ronald/bag/latest.bag -r 1"/>
-</launch>

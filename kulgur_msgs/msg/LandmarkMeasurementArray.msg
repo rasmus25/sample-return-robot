@@ -1,2 +1,0 @@
-time timestamp
-LandmarkMeasurement[] measurements

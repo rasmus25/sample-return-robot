@@ -1,5 +1,0 @@
-<launch>
-	<node pkg="kulgur_pf1" type="pf_predict" name="pf_predict"/>
-   	<node pkg="rosbag" type="play" name="rosbag" args="/home/ronald/bag/latest.bag -r 1"/>
-   	<!-- <node pkg="rosbag" type="play" name="rosbag" args="/home/ronald/bag/circle_3mradius.bag -r 5"/>  -->
-</launch>

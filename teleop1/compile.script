@@ -1,1 +1,0 @@
-g++ teleop1.cpp -lncurses -o teleop1
