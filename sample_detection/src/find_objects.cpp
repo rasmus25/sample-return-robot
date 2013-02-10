@@ -90,7 +90,7 @@ void findWhiteObjects()
 
 void findHistogramPeak()
 {
-	Mat hsv, mask;
+	Mat hsv, mask, lookup_table;
 	cvtColor(img, hsv, CV_BGR2HSV);
 
 	MatND big_histogram; //histograms
@@ -104,28 +104,45 @@ void findHistogramPeak()
 	float s_ranges[] = { 0, 256 };
 	const float* ranges[] = { h_ranges, s_ranges };
 
-	// Use the o-th and 1-st channels
+	// Use the 0-th and 1-st channels
 	int channels[] = { 0, 1 };
 
 	/// Calculate the histograms for the HSV images
 	calcHist( &hsv, 1, channels, Mat(), big_histogram, 2, histSize, ranges, true, false );
-	normalize( big_histogram, big_histogram, 0, 1, NORM_MINMAX, -1, Mat() );
+	normalize( big_histogram, big_histogram, 0, 255, NORM_MINMAX, -1, Mat() );
 
+	// find the peak value on the 2D histogram
 	int histogram_peak[2] = {0, 0}; //pure white color
 	minMaxIdx( big_histogram, 0, 0, 0, histogram_peak, Mat() );
 
-	// white is most prevalent color or no peak was found
+	// if white is most prevalent color or no peak was found
 	if (!histogram_peak[0] && !histogram_peak[1])
 		return;
 
-	// 10% of the peak value is a good threshold
-	threshold(big_histogram, big_histogram, 0.1, 255, CV_THRESH_BINARY);
+	// 10% of the peak value is a good threshold, i guess
+	threshold(big_histogram, big_histogram, 25, 255, CV_THRESH_BINARY);
 
-	// select only the biggest peak
+	// select only the biggest peak, if there are several over threshold
+	// others are masked out
 	mask.create(big_histogram.rows+2, big_histogram.cols+2, CV_8UC1);
 	mask = Scalar::all(0);
 	floodFill(big_histogram, mask, Point(histogram_peak[0]+1,histogram_peak[1]+1), 255, 0, 0, 0,
 						4 + (255 << 8) + cv::FLOODFILL_MASK_ONLY);
 
-	imshow("window", mask);
+	// floodfill's mask is the new histogram
+	// remove extra columns and rows to get a correctly sized histogram
+	Rect without_edges(1, 1, big_histogram.cols, big_histogram.rows);
+	lookup_table = mask(without_edges);
+	lookup_table=~lookup_table; //invert because mask is a negative image
+
+	/// Project the histogram peak back to the original image to find the most prevalent color
+	// TIP: if there is only one color peak then backprojecting the histogram of an image
+	//      to the image itself does a good job of highlighting the color. In case of several
+	//      peaks, we need to select one, as is done above.
+	Mat backproj;
+	calcBackProject( &hsv, 1, channels, lookup_table, backproj, ranges, 1, true );
+
+	//prepare image for filtering
+
+	imshow("window", backproj);
 }
