@@ -38,6 +38,7 @@ int main(int argc, char** argv)
 
 
 	namedWindow( "window", CV_WINDOW_NORMAL );
+	namedWindow( "histogram", CV_WINDOW_NORMAL );
 	setMouseCallback( "window", onMouse, 0 );
 	imshow( "window", img );
 	program_stage = SHOW_IMAGE;
@@ -88,6 +89,18 @@ void findWhiteObjects()
 	imshow( "window", mask );
 }
 
+void filterPepper(const Mat &matrix)
+{
+	int erosion_size = 3;
+	Mat element = getStructuringElement( MORPH_RECT,
+									   Size( 2*erosion_size + 1, 2*erosion_size+1 ),
+									   Point( erosion_size, erosion_size ) );
+	dilate( matrix, matrix, element );
+	erode( matrix, matrix, element );
+
+}
+
+
 void findHistogramPeak()
 {
 	Mat hsv, mask, lookup_table;
@@ -109,6 +122,9 @@ void findHistogramPeak()
 
 	/// Calculate the histograms for the HSV images
 	calcHist( &hsv, 1, channels, Mat(), big_histogram, 2, histSize, ranges, true, false );
+
+	// ignore white color peak (useful during testing in the winter)
+	big_histogram.at<double>(0,0) = 0;
 	normalize( big_histogram, big_histogram, 0, 255, NORM_MINMAX, -1, Mat() );
 
 	// find the peak value on the 2D histogram
@@ -116,17 +132,18 @@ void findHistogramPeak()
 	minMaxIdx( big_histogram, 0, 0, 0, histogram_peak, Mat() );
 
 	// if white is most prevalent color or no peak was found
-	if (!histogram_peak[0] && !histogram_peak[1])
+	if (histogram_peak[0]<=0 || histogram_peak[0]>=h_bins || histogram_peak[1]<=0 || histogram_peak[1]>=s_bins)
 		return;
 
-	// 10% of the peak value is a good threshold, i guess
+	// TODO: 10% of the peak value is a good threshold, i guess, but have to test
 	threshold(big_histogram, big_histogram, 25, 255, CV_THRESH_BINARY);
 
 	// select only the biggest peak, if there are several over threshold
 	// others are masked out
 	mask.create(big_histogram.rows+2, big_histogram.cols+2, CV_8UC1);
 	mask = Scalar::all(0);
-	floodFill(big_histogram, mask, Point(histogram_peak[0]+1,histogram_peak[1]+1), 255, 0, 0, 0,
+	big_histogram.at<double>(histogram_peak[1],histogram_peak[0]) = 0;
+	floodFill(big_histogram, mask, Point(histogram_peak[1],histogram_peak[0]), 255, 0, 0, 0,
 						4 + (255 << 8) + cv::FLOODFILL_MASK_ONLY);
 
 	// floodfill's mask is the new histogram
@@ -135,9 +152,6 @@ void findHistogramPeak()
 	lookup_table = mask(without_edges);
 	lookup_table.convertTo(lookup_table, CV_32F);
 
-	//invert because mask is a negative image
-	threshold(lookup_table, lookup_table, 1, 255, CV_THRESH_BINARY_INV);
-
 	/// Project the histogram peak back to the original image to find the most prevalent color
 	// TIP: if there is only one color peak then backprojecting the histogram of an image
 	//      to the image itself does a good job of highlighting the color. In case of several
@@ -145,6 +159,9 @@ void findHistogramPeak()
 	Mat backproj;
 	calcBackProject( &hsv, 1, channels, lookup_table, backproj, ranges, 1, true );
 
-	//prepare image for filtering
+	//Filter out small black specks
+	filterPepper(backproj);
+
 	imshow("window", backproj);
+	imshow("histogram", big_histogram);
 }
