@@ -93,7 +93,16 @@ void findHistogramPeak()
 	Mat hsv, mask, lookup_table;
 	cvtColor(img, hsv, CV_BGR2HSV);
 
-	MatND big_histogram; //histograms
+	// brighten up dark spots
+	// FIXME: assuming no black objects
+//	vector<Mat> hsv_planes;
+//	split(hsv, hsv_planes );
+//	hsv_planes[2] = ~(hsv_planes[2]);
+//	threshold(hsv_planes[2], hsv_planes[2], 200, 0, CV_THRESH_TRUNC);
+//	hsv_planes[2] = ~(hsv_planes[2]);
+//	merge(hsv_planes, hsv);
+
+	Mat big_histogram; //histograms
 
 	/// 30x32 bins
 	int h_bins = 30; int s_bins = 32;
@@ -133,7 +142,9 @@ void findHistogramPeak()
 	// remove extra columns and rows to get a correctly sized histogram
 	Rect without_edges(1, 1, big_histogram.cols, big_histogram.rows);
 	lookup_table = mask(without_edges);
-	lookup_table=~lookup_table; //invert because mask is a negative image
+	normalize( lookup_table, lookup_table, 0, 255, NORM_MINMAX, -1, Mat() );
+//	lookup_table=~lookup_table; //invert because mask is a negative image
+//	threshold(lookup_table, lookup_table, 1, 255, CV_THRESH_BINARY_INV);
 
 	/// Project the histogram peak back to the original image to find the most prevalent color
 	// TIP: if there is only one color peak then backprojecting the histogram of an image
@@ -143,6 +154,5 @@ void findHistogramPeak()
 	calcBackProject( &hsv, 1, channels, lookup_table, backproj, ranges, 1, true );
 
 	//prepare image for filtering
-
 	imshow("window", backproj);
 }
