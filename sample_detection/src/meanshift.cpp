@@ -56,7 +56,7 @@ int main(int argc, char** argv)
 //   imwrite("output.png", res);
    imshow( "window", img );
 
-   while(waitKey() != 27); // 27 = ascii value of ESC
+   while(waitKey(100) != 27); // 27 = ascii value of ESC
 
    return 0;
 }
@@ -120,8 +120,8 @@ static void onMouse( int event, int x, int y, int, void* )
 			img.copyTo(drawing);
 			for( int i = 0; i< contours.size(); i++ )
 			{
-				if(!big_contours[i])
-					continue;
+//				if(!big_contours[i])
+//					continue;
 				Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
 				drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
 			}

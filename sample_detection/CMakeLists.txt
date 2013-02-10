@@ -69,7 +69,7 @@ include_directories(include ${catkin_INCLUDE_DIRS})
 add_executable(blobdetection src/blobdetection.cpp)
 add_executable(meanshift src/meanshift.cpp)
 add_executable(histogram_correlation src/histogram_correlation.cpp)
-add_executable(calcHist_Demo src/calcHist_Demo.cpp)
+add_executable(find_objects src/find_objects.cpp)
 
 
 ## Add dependencies to the executable
@@ -88,7 +88,7 @@ add_executable(calcHist_Demo src/calcHist_Demo.cpp)
  target_link_libraries(histogram_correlation
    ${catkin_LIBRARIES}
  )
- target_link_libraries(calcHist_Demo
+ target_link_libraries(find_objects
    ${catkin_LIBRARIES}
  )
 

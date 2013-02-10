@@ -38,7 +38,7 @@ int main(int argc, char** argv)
 
    imshow( "window", img );
 
-   waitKey();
+   while((char)waitKey(100) != 27); // 27 = ascii value of ESC
 
    return 0;
 }
