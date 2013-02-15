@@ -21,6 +21,7 @@ void findWhiteObjects();
 bool findHistogramPeak();
 void filterPepper(const Mat &matrix);
 void findCandidates(const Mat &matrix);
+void ruleOutObvious();
 
 enum program_stages
 {
@@ -81,6 +82,7 @@ static void onMouse( int event, int x, int y, int, void* )
 				break;
 			case FIND_CANDIDATES:
 				program_stage = RULE_OUT_OBVIOUS;
+				ruleOutObvious();
 				break;
 			case RULE_OUT_OBVIOUS:
 				program_stage = ALL_DONE;
@@ -189,10 +191,31 @@ bool findHistogramPeak()
 }
 void findCandidates(const Mat &matrix)
 {
-	// TODO: find another starting point
-	findContours( matrix, contours, hierarchy, CV_RETR_TREE,
-			CV_CHAIN_APPROX_SIMPLE, Point(matrix.size().width/2, matrix.size().height-2) );
+	//TODO: not sure if need to clear
+	contours.clear();
+	hierarchy.clear();
 
+	findContours( matrix, contours, hierarchy, CV_RETR_TREE,
+			CV_CHAIN_APPROX_SIMPLE, Point(0,0) );
+
+	/// Draw contours
+	RNG rng(12345);
+	Mat drawing;
+	img.copyTo(drawing);
+
+	for( int i = 0; i< contours.size(); i++ )
+	{
+		Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
+		drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
+	}
+
+	/// Show in a window
+	imshow("window", drawing);
+}
+
+// Where my task actually begins
+void ruleOutObvious()
+{
 	//exclude small contours
 	double min_area = 200, max_area=200000;
 	vector<bool> big_contours;
@@ -206,35 +229,17 @@ void findCandidates(const Mat &matrix)
 	}
 	/// Draw contours
 	RNG rng(12345);
-//			Mat drawing = Mat::zeros( thresholded_image.size(), CV_8UC3 );
 	Mat drawing;
 	img.copyTo(drawing);
-	cout << "test ";
-	cout << contours.size();
-	cout << " end" << endl;
-
-	Rect bounding;
 
 	for( int i = 0; i< contours.size(); i++ )
 	{
 		if(!big_contours[i])
 			continue;
 		Scalar color = Scalar( rng.uniform(0, 255), rng.uniform(0,255), rng.uniform(0,255) );
-
-		bounding = boundingRect( Mat(contours[i]) );
-		cout << bounding.x <<" "<< bounding.y <<" "<< bounding.width <<" "<< bounding.height << endl;
-		rectangle( drawing, bounding.tl(), bounding.br(), color, 2, 8, 0 );
-
 		drawContours( drawing, contours, i, color, 2, 8, hierarchy, 0, Point() );
 	}
 
-	// FIXME: does not draw stuff
-	rectangle( drawing, Point(bounding.x, bounding.y), Point(bounding.x+10, bounding.y+10), Scalar(0,100,250), -1, 8, 0 );
-	rectangle( drawing, Point( 0, 100 ), Point( 100, 200), Scalar( 0, 255, 255 ), 2, 8, 0);
-	string message = "test";
-	putText(drawing, message, cvPoint(60,60),
-			FONT_HERSHEY_COMPLEX_SMALL, 4.0, cvScalar(0,100,250), 5);
 	/// Show in a window
 	imshow("window", drawing);
 }
-
