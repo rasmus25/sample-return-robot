@@ -15,6 +15,8 @@ Mat img, grass_mask;
 vector<vector<Point> > contours;
 vector<Vec4i> hierarchy;
 
+Point2f projectToGround(Point2f pixel_coordinates);
+
 void spCallback(int,void*);
 static void onMouse( int event, int x, int y, int, void* );
 void findWhiteObjects();
@@ -81,9 +83,13 @@ static void onMouse( int event, int x, int y, int, void* )
 				findCandidates(grass_mask);
 				break;
 			case FIND_CANDIDATES:
+			{
 				program_stage = RULE_OUT_OBVIOUS;
 				ruleOutObvious();
+				Point2f world = projectToGround(Point(x,y));
+				cout << world.x <<" "<< world.y << endl;
 				break;
+			}
 			case RULE_OUT_OBVIOUS:
 				program_stage = ALL_DONE;
 				break;
@@ -217,12 +223,19 @@ void findCandidates(const Mat &matrix)
 void ruleOutObvious()
 {
 	//exclude small contours
-	double min_area = 200, max_area=200000;
+	float min_width = 0.05, max_width=0.25;
 	vector<bool> big_contours;
+	Rect bounding;
 	big_contours.reserve(contours.size());
 	for (int i = 0; i < contours.size(); i++)
 	{
-		if(contourArea(contours[i]) > min_area && contourArea(contours[i]) < max_area)
+		bounding = boundingRect(contours[i]);
+		Point2f lowerleft = Point2f(bounding.x, bounding.y+bounding.height);
+		Point2f lowerright = Point2f(bounding.x+bounding.width, bounding.y+bounding.height);
+		float width = projectToGround(lowerleft).y - projectToGround(lowerright).y;
+		float distance = projectToGround(lowerleft).x;
+		
+		if(width > min_width && width < max_width && distance > 0 && distance < 30)
 			big_contours.push_back(true);
 		else
 			big_contours.push_back(false);
@@ -243,3 +256,57 @@ void ruleOutObvious()
 	/// Show in a window
 	imshow("window", drawing);
 }
+
+class cam
+{
+public:
+	float pan;
+	float tilt;
+	float X;
+	float Y;
+	float Z; //height
+	float fx;
+	float fy;
+	float cx; //principal point
+	float cy;
+	cam()
+	{
+		pan = 0.0; tilt = -0.32; // radians from front-pointing
+		X = 0.0; Y = 0.0; Z = 0.55; //meters from robot origin
+		fx = fy = 554.38; // from simulation
+		cx = 320.5; cy = 240.5;
+	}
+}front_cam;
+
+// how to project image pixel to ground plane in 7 easy steps:
+// 1. Calibrate the camera and save the camera matrix and distortion matrix
+// 2. Get resolution, camera matrix and distortion matrix from camera_info topic
+// 3. Get camera rotation and translation matrices from a tf topic (write your own publisher for this)
+// 4. Multiply the matrices to get a perspective transform
+// 5. Invert the transformation matrix to get inverse transform
+// 6. Calculate a mapping from image plane to ground plane
+// 7. For every point, use the mapping to get projection on ground plane
+//                       OR
+// 1. Use closed-form formulas (Duda & Hart, 1973) and hard-coded values, for now
+Point2f projectToGround(Point2f pixel_coordinates)
+{
+	Point2f onGround; // x is forward, y is left
+	pixel_coordinates.x -= front_cam.cx;
+	pixel_coordinates.y = front_cam.cy - pixel_coordinates.y;
+	onGround.x = front_cam.Y - 
+			(front_cam.Z*pixel_coordinates.x*sin(front_cam.pan)-
+					(pixel_coordinates.y*sin(front_cam.tilt)-
+					front_cam.fy*cos(front_cam.tilt))*
+					front_cam.Z*cos(front_cam.pan))/
+					(pixel_coordinates.y*cos(front_cam.tilt)+
+							front_cam.fy*sin(front_cam.tilt));
+	onGround.y = (front_cam.Z*pixel_coordinates.x*cos(front_cam.pan)+
+						(pixel_coordinates.y*sin(front_cam.tilt)-
+						front_cam.fy*cos(front_cam.tilt))*
+						front_cam.Z*sin(front_cam.pan))/
+						(pixel_coordinates.y*cos(front_cam.tilt)+
+								front_cam.fy*sin(front_cam.tilt))-
+								front_cam.X;
+	return onGround;
+}
+
